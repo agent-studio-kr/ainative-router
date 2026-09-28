@@ -61,3 +61,15 @@ The policy was frozen before RouterArena was routed and was not changed after se
 `artifacts/FREEZE.prev.json` is the first freeze. After routing RouterArena, a docstring in
 `arena_router/policy.py` was edited (comment-only; no behavior change) and the artifacts were re-frozen
 (`artifacts/FREEZE.json`). Policy, kNN index, and all other hashes are identical between the two records.
+
+## Post-submission exploration (not adopted)
+
+All of the following were evaluated **on the calibration set only** (no RouterArena data), after the v1 submission.
+None cleared the pre-registered bar (paired-bootstrap 95% CI lower bound of ΔArena > 0 vs. v1), so v1 stands.
+
+| Idea | Calibration result | Decision |
+|---|---|---|
+| Agreement cascade (gemma + qwen agree → keep, else gemini) | +0.38 Arena, −41% cost | Not adopted: RouterArena bills each row at one model's price, so probe calls cannot be reported honestly |
+| Prompt-only "needs the stronger model" predictor (MiniLM + domain, logistic) | CV AUROC 0.501 | Not adopted: no signal |
+| Screening 91 OpenRouter models on 140 non-RouterArena MMLU-Pro items, incl. reasoning-off / low-effort variants of GLM-5.3, Kimi-K2.x, Qwen3.8, MiniMax, DeepSeek | Best single MCQ models on the full calibration MCQ group: deepseek-v4.1-flash 89.8%, gemini-3-flash 89.7% | No cheaper model matched gemini-3-flash on multiple-choice |
+| v2 policy with 4 more arms (gpt-6-luna-pro, gemma-4-31b@high reasoning, deepseek-v4-flash-0731, mimo-v2.6-pro) | ΔArena +0.25 [−0.06, +0.56] | Not adopted: CI includes 0 |
