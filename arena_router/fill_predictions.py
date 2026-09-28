@@ -64,7 +64,7 @@ def main() -> None:
         usage = rec.get("usage") or {}
         e["generated_result"] = {
             "generated_answer": rec.get("content") or "",
-            "success": "error" not in rec and bool(rec.get("content")),
+            "success": "error" not in rec and bool((rec.get("content") or "").strip()),
             "token_usage": {
                 "input_tokens": usage.get("prompt_tokens", 0),
                 "output_tokens": usage.get("completion_tokens", 0),

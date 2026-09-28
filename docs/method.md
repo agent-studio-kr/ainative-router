@@ -1,72 +1,69 @@
 # Method
 
-## 1. Signals
+Content-only routing: **question body → content category → model**. The router never reads RouterArena files and
+does not match any instruction or prompt-template text.
 
-**Task group.** RouterArena formats every query with a per-source zero-shot template from its public
-eval configs (`config/eval_config/zero-shot/*.json`). Configs that share the same fixed instruction head form one
-group — 26 groups for 41 configs (e.g. one general multiple-choice head is shared by 12 configs).
+> Earlier versions (v1/v2, tag [`template-v2`](https://github.com/agent-studio-kr/ainative-router/tree/template-v2))
+> grouped queries by RouterArena's eval-config instruction heads. After review on RouterArena PR #213 this was
+> identified as dataset-specific routing (ruling in RouterArena #140) and was removed together with the re-weighting
+> to RouterArena's per-config counts.
 
-- Primary: longest matching instruction head (`arena_router/signals.py: template_heads`). Error ≤ 1% on the
-  calibration set (`tests/signals/test_task_signal.py`).
-- Fallback (head not found, e.g. paraphrased or typo'd instruction): majority vote of the 7 nearest calibration
-  prompts, using all-MiniLM-L6-v2 on the first 300 characters (instruction-dominated). On calibration prompts whose
-  instruction was paraphrased by an LLM (3 variants per head: paraphrase, synonym/grammar change, typos;
-  `scripts/paraphrase_templates.py`), fallback accuracy is **92.9%** (n = 1,090, held-out half).
+## 1. Signal
 
-**Domain.** `llm-semantic-router/Vela-1.0-Encoder-307M-Domain` (14 MMLU-Pro domains) on the question body with the
-template removed. Computed but **not used by the final policy** (see §3).
+**Question body (structural rule).** The prompt is split on blank lines; the first paragraph (instruction) and the
+last paragraph (answer format) are dropped when there are at least three paragraphs, otherwise the whole prompt is
+kept (`arena_router/signals.py: question_body`). Format cues are then removed generically — short line-leading
+labels (`Xxx:`), option letters (`A)`, `(b)`), and placeholder lines (`None`) — so only the question, passage and
+option *content* remains (`routing_text`). No string is compared against any benchmark template.
+
+**Content category.** all-MiniLM-L6-v2 embedding of the body → multinomial logistic regression (C = 10), trained
+only on the external calibration items (§3). Labels are our own 11-category taxonomy of the external sources:
+multiple-choice knowledge, multiple-choice math, math word/competition problems, finance math, code, translation,
+reading comprehension, NLI / word sense, ethics, chess, trivia (`CATEGORY_OF_SOURCE`). The source name is used
+only as a training label, never at routing time.
+
+Group 5-fold CV accuracy of the category classifier: **85.0%**. With the format cues left in it was 94.0%; the
+difference is how much a classifier would lean on formatting, which is why the cues are removed.
+
+Tests (`tests/signals/test_content_signal.py`): routing is invariant to replacing the first and last paragraphs
+with arbitrary text and to relabelling fields / option letters, and no router module references benchmark files.
 
 ## 2. Policy
 
-Cells: task group (optionally task group × domain). For each cell and model we estimate weighted mean accuracy and
-cost on the calibration set, shrunk toward the parent cell: `est = (n·mean + K0·parent) / (n + K0)`, `K0 = 10`;
-cells with `n < 20` inherit the parent's choice.
+Cells = predicted categories. For each cell and model: weighted mean accuracy and cost on the calibration set, shrunk
+toward the global mean (`est = (n·mean + K0·global) / (n + K0)`, `K0 = 10`). For λ on a log grid,
+`argmax_m (acc_m − λ·cost_m)` per cell; the λ with the highest Arena Score (RouterArena formula, β = 0.1) on the
+calibration set is kept.
 
-For λ on a log grid we pick `argmax_m (acc_m − λ·cost_m)` per cell and keep the policy with the highest Arena Score
-(RouterArena's formula, β = 0.1) on the calibration set. Sweeping λ traces the accuracy–cost Pareto frontier of
-per-cell policies; the Arena Score selects the operating point.
+Policy rows use **out-of-fold** predicted categories, so the policy is fit on the categories the classifier would
+actually assign.
 
-**Weights.** Calibration rows are re-weighted per source config to RouterArena's source-config proportions
-(counts only), so aggregate accuracy/cost reflect the benchmark's mix.
+**Weights: uniform per external source** (each source's rows sum to 1). No RouterArena proportions are used.
 
-**Costs** use RouterArena's price table (`model_cost/model_cost.json`) — the same prices the official scorer uses —
-and OpenRouter list prices for models not yet in the table (registered at those prices in the patch).
+**Costs** use RouterArena's price table (`model_cost/model_cost.json`) and OpenRouter list prices for models not in it
+(registered at those prices in the patch).
 
-## 3. Validation
+## 3. Calibration data
 
-Group 5-fold cross-validation (groups = same document / passage / game / problem family). In each fold the policy
-and the best single model are chosen on the training folds and applied to the held-out fold; ΔArena CI by paired
-bootstrap (2,000 resamples) over all held-out rows.
+6,409 external queries (fit set 2,179 + two extensions 2,177 and 2,053) from the same public source benchmarks with
+every RouterArena item removed (see [calibration.md](calibration.md)). Six OpenRouter models were run on all of them.
 
-| Variant | CV Arena | Best single model (CV) | ΔArena [95% CI] |
-|---|---:|---:|---|
-| task group × domain | 77.28 | 76.59 | +0.69 [−0.22, +1.62] |
-| **task group (selected)** | **77.48** | 76.59 | **+0.89 [+0.36, +1.42]** |
+## 4. Validation
 
-The domain split raised in-sample Arena (79.0) but lowered CV Arena, so it was dropped.
+Group 5-fold CV (groups = same document / passage / game / problem family). In each outer fold the classifier, the
+out-of-fold categories, the policy and the best single model are all refit on the training part and applied to the
+held-out part. ΔArena CI by paired bootstrap (2,000 resamples). Report: `artifacts/policy_report.json`.
 
-**v2 acceptance (held-out).** Model-pool changes are accepted only on a held-out calibration extension
-(2,177 queries, `calib/build_extra.py`, same construction and leakage checks, disjoint from the fit set). The v2
-policy (fit on the 2,179-query set) beat v1 there by ΔArena +0.50 [+0.27, +0.75] (`scripts/holdout_eval.py`).
-Reports: `artifacts/policy_report.json`, `artifacts/policy_report_domain.json`.
+| | CV Arena | Accuracy | $/1K |
+|---|---:|---:|---:|
+| **Router** | **72.15** | 74.3% | 0.487 |
+| Best single model per fold | 69.24 | 72.8% | 1.361 |
+| Δ [95% CI] | **+2.91 [+2.19, +3.61]** | | |
 
-## 4. Candidate models
-
-v2 pool: the five v1 models + `deepseek/deepseek-v4-flash-0731` (registered in RouterArena's price table at its
-OpenRouter list price, $0.021 / $0.32 per M tokens). The extra model came from a post-submission screen of 91
-OpenRouter models (incl. reasoning-off / low-effort variants) on 140 non-RouterArena MMLU-Pro items, followed by
-full-calibration-set runs of the shortlist.
-
-v1: five OpenRouter models were measured on the full calibration set: google/gemma-4-31b-it, openai/gpt-6-luna,
-google/gemini-3-flash-preview, deepseek/deepseek-v4.1-flash, qwen/qwen3-235b-a22b-2507. The shortlist came from a
-cost/quality probe of 23 OpenRouter models on 166 non-RouterArena items (MMLU-Pro test items absent from RouterArena,
-and AIME 2025 problems absent from RouterArena). Disclosure: the list of 23 probed candidates was informed by the
-model pools of public leaderboard submissions, and during early exploration we looked at aggregate per-model
-statistics in other submissions' public prediction files. No per-query RouterArena outcome was used, and the
-selection among candidates and the policy itself rely only on the external probe and the calibration set.
+(Absolute values are lower than RouterArena's because every source counts equally, including the hardest ones.)
 
 ## 5. Freeze and inference
 
-`artifacts/FREEZE.json` stores SHA-256 of the policy, kNN index, and signal/policy/router code, plus Hugging Face
-revisions of the two encoders. The router verifies it at load. Generation uses one OpenRouter call per query with
-provider-default sampling (as RouterArena's own OpenRouter client), recording provenance per row.
+`artifacts/FREEZE.json` stores SHA-256 of the policy, the classifier weights and the signal/policy/router code, plus
+the Hugging Face revision of the embedding model. The router verifies it at load. Generation uses one OpenRouter call
+per query with provider-default sampling, recording provenance per row.

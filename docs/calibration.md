@@ -8,7 +8,9 @@ representation (so RouterArena's own prompt builder and scorers apply unchanged)
 - Manifest (IDs, sources, groups — no text): `data/calib/calib_manifest.jsonl`.
 - Prompt formatting is byte-identical to RouterArena's `prep_datasets.py` on 7,000+ RouterArena rows
   (`tests/test_format_prompt.py`).
-- Target size per config: RouterArena's per-config share of 2,000, minimum 20 (`calib/targets.json`).
+- Target size per config at construction time: RouterArena's per-config share of 2,000, minimum 20
+  (`calib/targets.json`). These counts only set how many items were drawn per source; the router does **not** use
+  them — policy fitting weights every external source equally.
 - Items whose gold answer, placed in `\boxed{}`, does not score 1.0 with RouterArena's scorer are dropped
   (e.g. equation-form MATH answers).
 
@@ -68,4 +70,5 @@ Manifest: `data/calib_v3/calib_manifest.jsonl`.
 
 - LiveCodeBench v6 increment is harder than RouterArena's release_v2 items (55% "hard"); absolute code accuracy is
   underestimated for every model, relative ranking is used.
-- Minimum 20 items per config changes the mix; rows are re-weighted to RouterArena's per-config counts.
+- Every external source is weighted equally when fitting the policy, so hard low-volume sources (code, competition
+  math, chess) count as much as multiple-choice knowledge.

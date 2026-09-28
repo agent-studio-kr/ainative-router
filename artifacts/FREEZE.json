@@ -1,17 +1,17 @@
 {
- "frozen_at": "2026-09-28T10:41:01.833825+00:00",
+ "frozen_at": "2026-09-28T21:33:08.086493+00:00",
  "code": {
-  "arena_router/signals.py": "964dca1cfdc8c0ea5f063648a0ea59735ba62db1a074861cf70cb4448326786c",
-  "arena_router/policy.py": "8c4cbabfd6ad633ac125659ad2cbbe7408d659ee270dc7ae38e1b15907beb55e",
-  "arena_router/router.py": "87a7f98c9041763327f632ba4a35af83a9c09b8b0f5880f0341a25b2113bfc37"
+  "arena_router/signals.py": "ff262307f149bbc80db1eba14b843c334b893a1555708590a1225546e5587930",
+  "arena_router/policy.py": "c4d4f029c348271a5f3d309a5d0a39bb47ddd5679ba60c458c8f1acb2e0dc1a7",
+  "arena_router/router.py": "9166820ba183e4f51e45c2c9bd152167af0fa626f9774ffce4f59ff170f9e055"
  },
  "artifacts": {
-  "policy.json": "c8cfebaa4b5026212028ef4171d4b38a7adda50d881c826c1cd4f496a76bfeb3",
-  "knn_index.jsonl": "e27e900464f6884fb7470c8fa989c5a9b6d073e4cb70907bc79b8a85767f8e40"
+  "policy.json": "efda5c8a505ff9f86e94e3de5aca6b36d640c177c0283a4df8e1af92da047ec7",
+  "category_clf.npz": "2e2efe03cb2eb8759a5ec1b3a832075ab4c9e65c6368ff148e6193751d0f3304",
+  "category_clf.classes.json": "4ca0d43b4cbcfc9d0ba0d9c3b0cb6bfde3955632992019b2d5eb3c6324936e07"
  },
  "hf_revisions": {
-  "llm-semantic-router/Vela-1.0-Encoder-307M-Domain": "f6354f54adcf38770f635ad903be2b00577f6c11",
   "sentence-transformers/all-MiniLM-L6-v2": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
  },
- "note": "RouterArena \uacf5\uc2dd \ud3c9\uac00 \uc804\uc5d0 \ub3d9\uacb0. \uc774\ud6c4 \uc815\ucc45/\uc2e0\ud638 \ubcc0\uacbd \uc2dc \uc7ac\ub3d9\uacb0 \uae30\ub85d\uc774 \ub0a8\ub294\ub2e4."
+ "note": "Frozen before routing RouterArena. Content-only routing (question body -> category -> model)."
 }

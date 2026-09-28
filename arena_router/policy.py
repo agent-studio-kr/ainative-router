@@ -1,10 +1,9 @@
 """셀 → 모델 정책 (셀별 모델 배정 + λ 스윕으로 Arena Score 직접 최적화).
 
-셀 계층: global → task(템플릿 그룹) → task × domain
-- 셀 추정치는 부모 셀로 수축(shrinkage): est = (n·mean + K0·parent) / (n + K0)
-- 표본 n < MIN_N 인 셀은 부모 셀의 선택을 따른다
+셀 = 질문 본문에서 예측한 내용 범주 (arena_router.signals). 도메인 하위 셀은 쓰지 않는다(use_domain=False).
+- 셀 추정치는 전체로 수축(shrinkage): est = (n·mean + K0·parent) / (n + K0)
 - λ 스윕: 셀마다 argmax(acc − λ·cost), 가중 Arena Score가 최대인 λ 채택
-- 가중치: RouterArena 원천 비율 / 보정 세트 원천 비율 (config 단위)
+- 가중치: 외부 원천마다 합이 1 (원천 균등)
 """
 from __future__ import annotations
 
@@ -100,7 +99,7 @@ def best_single(obs: list[Obs], models: list[str]) -> str:
     return max(models, key=lambda m: evaluate(Policy(models, m), obs)[2])
 
 
-def fit(obs: list[Obs], models: list[str], use_domain: bool = True) -> Policy:
+def fit(obs: list[Obs], models: list[str], use_domain: bool = False) -> Policy:
     _, g_stats = _cell_stats(obs, models)
     by_task: dict[str, list[Obs]] = defaultdict(list)
     for o in obs:

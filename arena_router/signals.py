@@ -1,127 +1,101 @@
-"""라우팅 신호: 과제 유형(템플릿 그룹) · 질문 본문 · 도메인.
+"""라우팅 신호: 질문 본문의 내용 범주 (content category).
 
-- 과제 유형: RouterArena 공개 eval config 템플릿의 고정 머리말로 판별 (데이터가 아닌 설정 파일에서 도출).
-  머리말이 맞지 않으면(패러프레이즈된 프롬프트 등) 보정 세트 프롬프트 임베딩 kNN으로 폴백한다.
-- 도메인: 템플릿을 떼어낸 질문 본문을 Vela-1.0-Encoder-307M-Domain(14 MMLU-Pro 도메인)으로 분류.
+- 본문 추출은 구조 규칙만 쓴다: 빈 줄로 나눈 문단 중 첫 문단(지시문)과 마지막 문단(답 형식)을 뗀 뒤,
+  줄 머리의 짧은 라벨("Xxx:"), 보기 기호("A)"), 빈 자리표시 줄("None")을 지운다(형식 단서 제거).
+  벤치마크 설정 파일이나 지시문 문자열은 읽지도, 비교하지도 않는다.
+- 범주 분류기: all-MiniLM-L6-v2 본문 임베딩 → 다항 로지스틱 회귀. 외부 보정 문항으로만 학습하며,
+  라벨은 각 문항의 외부 원천을 우리 범주 체계(CATEGORY_OF_SOURCE)로 옮긴 것이다.
 """
 from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 
 import numpy as np
 
-CONFIG_DIR = Path(__file__).resolve().parents[1] / "third_party" / "RouterArena" / "config" / "eval_config" / "zero-shot"
-DOMAIN_MODEL = "llm-semantic-router/Vela-1.0-Encoder-307M-Domain"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-KNN_K = 7
-KNN_PREFIX_CHARS = 300  # 지시문 위주로 임베딩 (본문 내용이 과제 판별을 지배하지 않도록)
+MIN_PARAGRAPHS = 3
 
-
-def template_heads(config_dir: Path = CONFIG_DIR) -> dict[str, str]:
-    """템플릿 고정 머리말 → 그룹 이름. 같은 머리말을 공유하는 config는 한 그룹 (그룹 이름 = config 이름들을 '|'로 연결)."""
-    groups: dict[str, list[str]] = {}
-    for p in sorted(config_dir.glob("*.json")):
-        params = json.loads(p.read_text())["eval_params"]
-        template = params.get("prompt") or params.get("is_stdin_prompt") or ""
-        head = template.split("{")[0].strip()
-        groups.setdefault(head, []).append(p.stem)
-        if "not_is_stdin_prompt" in params:  # LiveCodeBench 함수형 템플릿
-            groups.setdefault(params["not_is_stdin_prompt"].split("{")[0].strip(), []).append(p.stem)
-    return {head: "|".join(sorted(set(cfgs))) for head, cfgs in groups.items() if head}
-
-
-_BODY_PATTERNS = [
-    re.compile(r"Question:\s*(.*?)\s*(?:\n\s*Options:|\n\s*Provide |\Z)", re.S),
-    re.compile(r"Translate the following sentence[^\n]*\n\s*(.*?)\s*(?:\n\s*Provide |\Z)", re.S),
-]
+# 외부 원천 → 내용 범주 (학습 라벨 전용; 라우팅 시에는 쓰지 않는다)
+CATEGORY_OF_SOURCE = {
+    **{s: "mcq_knowledge" for s in [
+        "ArcMMLU", "GeoBench", "MMLU", "MMLUPro", "MedMCQA", "MusicTheoryBench", "OpenTDB", "PubMedQA",
+        "SocialiQA", "SuperGLUE-CausalReasoning", "GPQA",
+    ]},
+    "MathQA": "mcq_math",
+    **{s: "math" for s in ["GSM8K", "MATH", "AsDiv", "AIME"]},
+    "FinQA": "finance_math",
+    "LiveCodeBench": "code",
+    **{f"WMT19-{p}-en": "translation" for p in ["cs", "de", "fi", "gu", "kk", "lt", "ru", "zh"]},
+    **{s: "reading" for s in ["NarrativeQA", "SuperGLUE-QA", "SuperGLUE-RC", "SuperGLUE-ClozeTest"]},
+    **{s: "nli" for s in ["SuperGLUE-Entailment", "SuperGLUE-Wic", "SuperGLUE-Wsc"]},
+    **{s: "ethics" for s in ["Ethics_commonsense", "Ethics_deontology", "Ethics_justice", "Ethics_virtue"]},
+    **{s: "chess" for s in ["ChessInstruct", "ChessInstruct_mcq"]},
+    **{s: "trivia" for s in ["QANTA", "GeoGraphyData"]},
+}
 
 
 def question_body(prompt: str) -> str:
-    """템플릿 지시문을 뗀 질문 본문 (도메인 분류용). 패턴이 없으면 원문."""
-    for pat in _BODY_PATTERNS:
-        m = pat.search(prompt)
-        if m and m.group(1).strip():
-            return m.group(1).strip()
-    return prompt
+    """첫 문단(지시문)과 마지막 문단(답 형식)을 뗀 본문. 문단이 3개 미만이면 원문."""
+    paras = [p for p in prompt.strip().split("\n\n") if p.strip()]
+    if len(paras) < MIN_PARAGRAPHS:
+        return prompt.strip()
+    return "\n\n".join(paras[1:-1]).strip()
 
 
-@dataclass
-class Signals:
-    task: str  # 템플릿 그룹 이름
-    task_source: str  # "template" | "knn"
-    domain: str
-    domain_conf: float
+_LABEL = re.compile(r"(?m)^[ \t]*[A-Za-z][A-Za-z0-9 _\-\"']{0,30}:[ \t]*")
+_OPTION = re.compile(r"(?m)^[ \t]*\(?[A-Ja-j][\).:\]][ \t]+")
+_PLACEHOLDER = re.compile(r"(?mi)^[ \t]*(none|null|n/a)[ \t]*$")
 
 
-class SignalExtractor:
-    def __init__(self, knn_prompts: list[str], knn_tasks: list[str], device: str | None = None) -> None:
-        self.heads = sorted(template_heads().items(), key=lambda kv: -len(kv[0]))  # 긴 머리말 우선
-        self._knn_prompts = knn_prompts
-        self._knn_tasks = np.array(knn_tasks)
+def normalize_body(body: str) -> str:
+    """형식 단서 제거: 줄 머리 라벨, 보기 기호, 빈 자리표시 줄. 남는 것은 질문·지문·보기의 내용뿐."""
+    text = _PLACEHOLDER.sub("", _OPTION.sub("", _LABEL.sub("", body)))
+    return re.sub(r"\n{2,}", "\n", text).strip()
+
+
+def routing_text(prompt: str) -> str:
+    return normalize_body(question_body(prompt))
+
+
+class Embedder:
+    def __init__(self, device: str | None = None) -> None:
         self._device = device
 
     @cached_property
-    def _embedder(self):
+    def _model(self):
         from sentence_transformers import SentenceTransformer
 
         return SentenceTransformer(EMBED_MODEL, device=self._device)
 
-    @cached_property
-    def _knn_matrix(self) -> np.ndarray:
-        return self._embedder.encode([p[:KNN_PREFIX_CHARS] for p in self._knn_prompts], batch_size=128, normalize_embeddings=True, show_progress_bar=False)
+    def encode(self, prompts: list[str]) -> np.ndarray:
+        bodies = [routing_text(p) for p in prompts]
+        return self._model.encode(bodies, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
 
-    @cached_property
-    def _domain(self):
-        import torch
-        from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-        dev = self._device or ("mps" if torch.backends.mps.is_available() else "cpu")
-        tok = AutoTokenizer.from_pretrained(DOMAIN_MODEL)
-        model = AutoModelForSequenceClassification.from_pretrained(DOMAIN_MODEL).eval().to(dev)
-        return tok, model, dev
+class CategoryClassifier:
+    """다항 로지스틱 회귀 (가중치는 npz 로 저장해 해시 동결)."""
 
-    def task_by_template(self, prompt: str) -> str | None:
-        p = prompt.lstrip()
-        for head, group in self.heads:
-            if p.startswith(head):
-                return group
-        return None
+    def __init__(self, classes: list[str], coef: np.ndarray, intercept: np.ndarray) -> None:
+        self.classes, self.coef, self.intercept = list(classes), coef, intercept
 
-    def task_by_knn(self, prompts: list[str]) -> list[str]:
-        q = self._embedder.encode([p[:KNN_PREFIX_CHARS] for p in prompts], batch_size=128, normalize_embeddings=True, show_progress_bar=False)
-        sims = q @ self._knn_matrix.T
-        top = np.argsort(-sims, axis=1)[:, :KNN_K]
-        out = []
-        for row in top:
-            labels, counts = np.unique(self._knn_tasks[row], return_counts=True)
-            out.append(str(labels[np.argmax(counts)]))
-        return out
+    @classmethod
+    def fit(cls, X: np.ndarray, y: list[str], C: float = 10.0) -> "CategoryClassifier":
+        from sklearn.linear_model import LogisticRegression
 
-    def domains(self, bodies: list[str], batch_size: int = 32) -> list[tuple[str, float]]:
-        import torch
+        lr = LogisticRegression(C=C, max_iter=2000).fit(X, y)
+        return cls(list(lr.classes_), lr.coef_, lr.intercept_)
 
-        tok, model, dev = self._domain
-        out: list[tuple[str, float]] = []
-        with torch.no_grad():
-            for i in range(0, len(bodies), batch_size):
-                enc = tok(bodies[i : i + batch_size], padding=True, truncation=True, max_length=512, return_tensors="pt").to(dev)
-                probs = model(**enc).logits.softmax(-1).cpu().numpy()
-                out += [(model.config.id2label[int(p.argmax())], float(p.max())) for p in probs]
-        return out
+    def predict(self, X: np.ndarray) -> list[str]:
+        return [self.classes[i] for i in np.argmax(X @ self.coef.T + self.intercept, axis=1)]
 
-    def extract(self, prompts: list[str]) -> list[Signals]:
-        tasks = [self.task_by_template(p) for p in prompts]
-        miss = [i for i, t in enumerate(tasks) if t is None]
-        if miss:
-            for i, t in zip(miss, self.task_by_knn([prompts[i] for i in miss])):
-                tasks[i] = t
-        doms = self.domains([question_body(p) for p in prompts])
-        miss_set = set(miss)
-        return [
-            Signals(task=t, task_source="knn" if i in miss_set else "template", domain=d, domain_conf=c)
-            for i, (t, (d, c)) in enumerate(zip(tasks, doms))
-        ]
+    def save(self, path: Path) -> None:
+        np.savez(path, coef=self.coef, intercept=self.intercept)
+        path.with_suffix(".classes.json").write_text(json.dumps(self.classes))
+
+    @classmethod
+    def load(cls, path: Path) -> "CategoryClassifier":
+        d = np.load(path)
+        return cls(json.loads(path.with_suffix(".classes.json").read_text()), d["coef"], d["intercept"])

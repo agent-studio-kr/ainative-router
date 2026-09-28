@@ -27,7 +27,6 @@ data/calib/calib_set.jsonl
 data/calib/calib_prompts.jsonl
 data/calib/lcb_answers.jsonl
 data/calib/pilot_ids.txt
-artifacts/knn_index.jsonl
 
 # dev tooling
 .active-agents*
@@ -50,3 +49,6 @@ data/calib_v3/lcb_answers.jsonl
 data/calib_v3/results/
 data/calib_v3/*.log
 data/calib_v3/cache/
+
+# derived embedding caches (rebuilt by arena_router.build_policy)
+data/*/body_embeddings.npz
