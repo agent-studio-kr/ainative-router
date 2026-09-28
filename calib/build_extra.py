@@ -24,14 +24,17 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--scale", type=float, default=1.0, help="config별 추가 목표 = 기존 목표 × scale")
     ap.add_argument("--out", default=str(NEW), help="출력 디렉터리 (재현 검증용)")
+    ap.add_argument("--base", default=str(OLD), help="제외·병합할 기존 세트 (두 번째 확장은 data/calib_v2)")
+    ap.add_argument("--prefix", default="cal2", help="추가분 id 접두사")
     args = ap.parse_args()
     out = Path(args.out)
+    base = Path(args.base)
 
     out.mkdir(parents=True, exist_ok=True)
     if (OLD / "cache").exists() and not (out / "cache").exists():
         shutil.copytree(OLD / "cache", out / "cache")
 
-    old_rows = [json.loads(l) for l in (OLD / "calib_set.jsonl").read_text().splitlines()]
+    old_rows = [json.loads(l) for l in (base / "calib_set.jsonl").read_text().splitlines()]
     seen_src = {(r["source_hf"], r["source_id"]) for r in old_rows if r["source_id"]}
     seen_q = {normalize(r["question"]) + "|" + normalize(r.get("context", ""))[:200] for r in old_rows}
 
@@ -61,12 +64,12 @@ def main() -> None:
         report[cfg] = {"target": target, "fresh_candidates": len(fresh), "selected": len(chosen)}
         print(f"{cfg:28s} target {target:4d} fresh {len(fresh):5d} sel {len(chosen):4d}", flush=True)
 
-    ids = [f"cal2_{r.config_name}_{i:05d}" for i, r in enumerate(extra)]
+    ids = [f"{args.prefix}_{r.config_name}_{i:05d}" for i, r in enumerate(extra)]
     # 병합본: 기존 + 추가
     with (out / "calib_set.jsonl").open("w", encoding="utf-8") as f, (out / "lcb_answers.jsonl").open("w", encoding="utf-8") as g:
-        for line in (OLD / "calib_set.jsonl").read_text().splitlines():
+        for line in (base / "calib_set.jsonl").read_text().splitlines():
             f.write(line + "\n")
-        for line in (OLD / "lcb_answers.jsonl").read_text().splitlines():
+        for line in (base / "lcb_answers.jsonl").read_text().splitlines():
             g.write(line + "\n")
         for id_, r in zip(ids, extra):
             rec = {"id": id_, **r.to_json()}
@@ -75,7 +78,7 @@ def main() -> None:
                 rec["answer"] = {"_ref": "lcb_answers.jsonl"}
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
     with (out / "calib_prompts.jsonl").open("w", encoding="utf-8") as f:
-        for line in (OLD / "calib_prompts.jsonl").read_text().splitlines():
+        for line in (base / "calib_prompts.jsonl").read_text().splitlines():
             f.write(line + "\n")
         for id_, r in zip(ids, extra):
             f.write(json.dumps({"id": id_, "config_name": r.config_name, "prompt": format_prompt(r)}, ensure_ascii=False) + "\n")
