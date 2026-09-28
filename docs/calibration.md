@@ -52,6 +52,14 @@ structured game-level check instead. Report: `data/calib/leakage_report.json`.
 | LiveCodeBench | lighteval/code_generation_lite : release_v6 increment (2025-01..04) | see card | RouterArena LCB items are all from release_v2; disjoint by date |
 | ChessInstruct(_mcq) | Thytu/ChessInstruct : test | CC BY-4.0 | game-level exclusion |
 
+## Extension for held-out validation (v2)
+
+`python -m calib.build_extra --seed 11` draws 2,197 further items with the same loaders and targets, excluding
+RouterArena **and** every source ID / question of the 2,179-query set; `calib.leakage --drop` then removed 20
+(MiniLM ≥ 0.85), leaving 2,177 (`cal2_*` IDs). Merged set (4,356 rows): `data/calib_v2/calib_manifest.jsonl`,
+leakage report `data/calib_v2/leakage_report.json`. The extension is used only to validate policies fit on the
+original set, never to fit them.
+
 ## Known biases
 
 - LiveCodeBench v6 increment is harder than RouterArena's release_v2 items (55% "hard"); absolute code accuracy is

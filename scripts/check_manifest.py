@@ -2,9 +2,10 @@
 import hashlib
 import json
 import sys
+import os
 from pathlib import Path
 
-DATA = Path(__file__).resolve().parents[1] / "data" / "calib"
+DATA = Path(os.environ.get("CALIB_DATA_DIR", Path(__file__).resolve().parents[1] / "data" / "calib"))
 manifest = {r["id"]: r for r in map(json.loads, (DATA / "calib_manifest.jsonl").read_text().splitlines())}
 prompts = {r["id"]: r["prompt"] for r in map(json.loads, (DATA / "calib_prompts.jsonl").read_text().splitlines())}
 bad = [i for i, m in manifest.items() if i not in prompts or hashlib.sha256(prompts[i].encode()).hexdigest() != m["prompt_sha256"]]

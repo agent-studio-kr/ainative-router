@@ -20,11 +20,11 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 
-from calib.common import ROOT
+from calib.common import DATA_DIR, ROOT
 
 URL = "https://openrouter.ai/api/v1/chat/completions"
 KEY_URL = "https://openrouter.ai/api/v1/key"
-RESULTS_DIR = ROOT / "data" / "calib" / "results"
+RESULTS_DIR = DATA_DIR / "results"
 RETRY_STATUS = {408, 429, 500, 502, 503, 504}
 
 
@@ -33,18 +33,41 @@ class SpendCapReached(RuntimeError):
 
 
 async def account_usage(client: httpx.AsyncClient, key: str) -> float:
-    r = await client.get(KEY_URL, headers={"Authorization": f"Bearer {key}"})
-    return float(r.json()["data"]["usage"])
+    """계정 누적 사용액. 일시적 네트워크 오류로 전체 실행이 죽지 않도록 재시도한다."""
+    for attempt in range(5):
+        try:
+            r = await client.get(KEY_URL, headers={"Authorization": f"Bearer {key}"})
+            return float(r.json()["data"]["usage"])
+        except (httpx.HTTPError, KeyError, ValueError):
+            if attempt == 4:
+                raise
+            await asyncio.sleep(3 * 2**attempt)
+    raise RuntimeError("unreachable")
+
+
+def split_variant(model: str) -> tuple[str, dict]:
+    """"vendor/model@high" → ("vendor/model", {"reasoning": {"effort": "high"}}), "@off" → 추론 끔. 추론 노력도 라우팅 선택지로 쓴다."""
+    if "@" not in model:
+        return model, {}
+    base, effort = model.split("@", 1)
+    if effort == "off":
+        return base, {"reasoning": {"enabled": False}}
+    return base, {"reasoning": {"effort": effort}}
+
+
+CALL_TIMEOUT_S = 900.0
 
 
 async def call(client: httpx.AsyncClient, key: str, model: str, prompt: str) -> dict:
-    body = {"model": model, "messages": [{"role": "user", "content": prompt}], "usage": {"include": True}}
+    base_model, extra = split_variant(model)
+    body = {"model": base_model, "messages": [{"role": "user", "content": prompt}], "usage": {"include": True}, **extra}
     invoked_at = dt.datetime.now(dt.timezone.utc).isoformat()
     t0 = time.monotonic()
     last_error = ""
     for attempt in range(5):
         try:
-            r = await client.post(URL, json=body, headers={"Authorization": f"Bearer {key}"})
+            # httpx 타임아웃은 읽기 간격 기준이라 keepalive가 오면 끝나지 않는다 → 요청 전체 시간 상한
+            r = await asyncio.wait_for(client.post(URL, json=body, headers={"Authorization": f"Bearer {key}"}), CALL_TIMEOUT_S)
             data = r.json()
             if r.status_code in RETRY_STATUS or ("error" in data and data["error"].get("code") in RETRY_STATUS):
                 last_error = str(data.get("error", r.status_code))[:300]
@@ -63,6 +86,7 @@ async def call(client: httpx.AsyncClient, key: str, model: str, prompt: str) -> 
                 "model_used": data.get("model"),
                 "provider": data.get("provider"),
                 "request_id": data.get("id"),
+                "request_params": extra,
                 "invoked_at": invoked_at,
                 "content": choice["message"].get("content"),
                 "finish_reason": choice.get("finish_reason"),
@@ -70,7 +94,7 @@ async def call(client: httpx.AsyncClient, key: str, model: str, prompt: str) -> 
                 "actual_cost": usage.get("cost"),
                 "latency_s": time.monotonic() - t0,
             }
-        except (httpx.HTTPError, json.JSONDecodeError, KeyError, IndexError) as e:
+        except (httpx.HTTPError, asyncio.TimeoutError, json.JSONDecodeError, KeyError, IndexError) as e:
             last_error = f"{type(e).__name__}: {e}"[:300]
             await asyncio.sleep(3 * 2**attempt)
     return {"requested_model": model, "invoked_at": invoked_at, "error": last_error, "latency_s": time.monotonic() - t0}
@@ -95,7 +119,7 @@ async def run_pairs(
     lock = asyncio.Lock()
     sem = asyncio.Semaphore(concurrency)
     stop = asyncio.Event()
-    async with httpx.AsyncClient(timeout=httpx.Timeout(600.0)) as client:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(120.0)) as client:
         start_usage = await account_usage(client, key)
         print(f"account usage at start: ${start_usage:.2f} (cap ${spend_cap:.2f})", flush=True)
         counter = {"n": 0}
@@ -131,10 +155,6 @@ async def run_pairs(
             raise SpendCapReached(f"spend cap ${spend_cap} reached")
 
 
-async def run(items: list[dict], models: list[str], key: str, concurrency: int, spend_cap: float) -> None:
-    # 모델을 번갈아 배치해 한 모델이 느려도 전체가 막히지 않게 한다
-    pairs = [(m, it) for it in items for m in models]
-    await run_pairs(pairs, key, concurrency, spend_cap)
 
 
 def main() -> None:
@@ -145,6 +165,7 @@ def main() -> None:
     ap.add_argument("--ids", default="")
     ap.add_argument("--concurrency", type=int, default=12)
     ap.add_argument("--spend-cap", type=float, default=35.0, help="계정 누적 사용액(USD)이 이 값에 도달하면 중단")
+    ap.add_argument("--results-dir", default=str(RESULTS_DIR))
     args = ap.parse_args()
 
     load_dotenv(ROOT / ".env")
@@ -156,7 +177,8 @@ def main() -> None:
     if args.limit:
         items = items[: args.limit]
     models = [m.strip() for m in args.models.split(",") if m.strip()]
-    asyncio.run(run(items, models, key, args.concurrency, args.spend_cap))
+    pairs = [(m, it) for it in items for m in models]
+    asyncio.run(run_pairs(pairs, key, args.concurrency, args.spend_cap, Path(args.results_dir)))
 
 
 if __name__ == "__main__":

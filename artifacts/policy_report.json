@@ -1,68 +1,74 @@
 {
  "load": {
   "rows": 2179,
-  "missing_model_results": 0,
-  "used": 2179
+  "missing_model_results": 18,
+  "used": 2161
  },
  "use_domain": false,
  "cv": {
   "router": {
-   "acc": 0.8023959893600043,
-   "cost_per_1k": 0.41422217574620523,
-   "arena": 0.7747505741653905
+   "acc": 0.8016928010304507,
+   "cost_per_1k": 0.3501848846351109,
+   "arena": 0.7766642619572207
   },
   "best_single_per_fold": {
-   "acc": 0.7970036116607121,
-   "cost_per_1k": 0.5441569240653846,
-   "arena": 0.7658781659037617,
+   "acc": 0.801212655062214,
+   "cost_per_1k": 0.5380562011346353,
+   "arena": 0.769595376936559,
    "models": {
-    "google/gemini-3-flash-preview": 2179
+    "google/gemini-3-flash-preview": 2161
    }
   },
-  "delta_arena": 0.008872408261628828,
+  "delta_arena": 0.007068885020661719,
   "delta_arena_ci95": [
-   0.0035549941900574534,
-   0.014243235004935847
+   -0.0012784098170382924,
+   0.014754822570295516
   ]
  },
  "final_in_sample": {
-  "acc": 0.8098127848094735,
-  "cost_per_1k": 0.4085571737238316,
-  "arena": 0.781243454998948,
+  "acc": 0.8180056296834458,
+  "cost_per_1k": 0.41929697335144533,
+  "arena": 0.7877554383275408,
   "lambda": 58.61756269845898
  },
  "single_models_in_sample": {
   "google/gemma-4-31b-it": {
-   "acc": 0.7416146813410923,
-   "cost_per_1k": 0.09875210261237995,
-   "arena": 0.7386163757710584
+   "acc": 0.7478487789558543,
+   "cost_per_1k": 0.0901717272973867,
+   "arena": 0.7450712990522059
   },
   "openai/gpt-6-luna": {
-   "acc": 0.7405931145201504,
-   "cost_per_1k": 0.2527832363914788,
-   "arena": 0.7280089506911872
+   "acc": 0.7453010086169748,
+   "cost_per_1k": 0.2357222709106445,
+   "arena": 0.7329542282440036
   },
   "google/gemini-3-flash-preview": {
-   "acc": 0.7970036116607121,
-   "cost_per_1k": 0.5441569240653846,
-   "arena": 0.7658781659037617
+   "acc": 0.801212655062214,
+   "cost_per_1k": 0.5380562011346354,
+   "arena": 0.769595376936559
   },
   "deepseek/deepseek-v4.1-flash": {
-   "acc": 0.79711988306024,
-   "cost_per_1k": 1.1831083884823872,
-   "arena": 0.7515902696645456
+   "acc": 0.8003274820625289,
+   "cost_per_1k": 1.0864102778069977,
+   "arena": 0.7559525466530496
   },
   "qwen/qwen3-235b-a22b-2507": {
-   "acc": 0.7046900646665101,
-   "cost_per_1k": 0.04431916401910782,
-   "arena": 0.711277357784859
+   "acc": 0.7100860259322105,
+   "cost_per_1k": 0.043021152920953404,
+   "arena": 0.7164810723420932
+  },
+  "deepseek/deepseek-v4-flash-0731": {
+   "acc": 0.7732871282600856,
+   "cost_per_1k": 0.8462433571575565,
+   "arena": 0.7385473310559852
   }
  },
  "final_route_share_unweighted": {
-  "google/gemma-4-31b-it": 284,
-  "google/gemini-3-flash-preview": 1693,
-  "openai/gpt-6-luna": 59,
-  "deepseek/deepseek-v4.1-flash": 83,
-  "qwen/qwen3-235b-a22b-2507": 60
+  "deepseek/deepseek-v4-flash-0731": 121,
+  "google/gemini-3-flash-preview": 1661,
+  "openai/gpt-6-luna": 39,
+  "deepseek/deepseek-v4.1-flash": 63,
+  "google/gemma-4-31b-it": 237,
+  "qwen/qwen3-235b-a22b-2507": 40
  }
 }

@@ -1,0 +1,39 @@
+{
+ "rows": 4376,
+ "exact_question": 0,
+ "context_prefix": 0,
+ "embedding_ge_0.85": 20,
+ "duplicate_source_ids": 0,
+ "flagged_by_config": {
+  "FinQA": 1,
+  "GeoBench": 2,
+  "MMLU": 14,
+  "MMLUPro": 1,
+  "MusicTheoryBench": 1,
+  "OpenTDB": 1
+ },
+ "max_sim_p99": 0.9942265152931213,
+ "flagged_ids": [
+  "cal2_FinQA_00265",
+  "cal2_GeoBench_00303",
+  "cal2_GeoBench_00320",
+  "cal2_MMLUPro_01024",
+  "cal2_MMLU_00501",
+  "cal2_MMLU_00502",
+  "cal2_MMLU_00503",
+  "cal2_MMLU_00504",
+  "cal2_MMLU_00505",
+  "cal2_MMLU_00506",
+  "cal2_MMLU_00507",
+  "cal2_MMLU_00509",
+  "cal2_MMLU_00512",
+  "cal2_MMLU_00513",
+  "cal2_MMLU_00515",
+  "cal2_MMLU_00516",
+  "cal2_MMLU_00517",
+  "cal2_MMLU_00518",
+  "cal2_MusicTheoryBench_01290",
+  "cal2_OpenTDB_01541"
+ ],
+ "dropped": true
+}

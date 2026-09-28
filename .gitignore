@@ -8,7 +8,7 @@ __pycache__/
 *.pyc
 graft/
 
-# third-party checkout (apply patches/routerarena-arena-router.patch instead)
+# third-party checkout (apply patches/routerarena-ko-agent-router.patch instead)
 third_party/
 
 # internal notes (not part of the public release)
@@ -36,3 +36,11 @@ artifacts/knn_index.jsonl
 
 # RouterArena rows used only as a format reference while writing loaders
 data/routerarena_schema_samples.json
+
+# calibration extension: raw text / outputs (IDs, scores and signals are tracked)
+data/calib_v2/calib_set.jsonl
+data/calib_v2/calib_prompts.jsonl
+data/calib_v2/lcb_answers.jsonl
+data/calib_v2/results/
+data/calib_v2/*.log
+data/calib_v2/cache/

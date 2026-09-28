@@ -1,12 +1,12 @@
 {
- "frozen_at": "2026-09-28T10:41:01.833825+00:00",
+ "frozen_at": "2026-09-28T04:35:03.927159+00:00",
  "code": {
   "arena_router/signals.py": "964dca1cfdc8c0ea5f063648a0ea59735ba62db1a074861cf70cb4448326786c",
   "arena_router/policy.py": "8c4cbabfd6ad633ac125659ad2cbbe7408d659ee270dc7ae38e1b15907beb55e",
   "arena_router/router.py": "87a7f98c9041763327f632ba4a35af83a9c09b8b0f5880f0341a25b2113bfc37"
  },
  "artifacts": {
-  "policy.json": "c8cfebaa4b5026212028ef4171d4b38a7adda50d881c826c1cd4f496a76bfeb3",
+  "policy.json": "9842a2f2b3ce2c6eb958c6565ea2b880c59b5ff9b9befa429a636b1ecb756ee9",
   "knn_index.jsonl": "e27e900464f6884fb7470c8fa989c5a9b6d073e4cb70907bc79b8a85767f8e40"
  },
  "hf_revisions": {

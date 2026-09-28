@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from dataclasses import asdict, dataclass, field
@@ -20,7 +21,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 ROUTERARENA_DIR = ROOT / "third_party" / "RouterArena"
 CONFIG_DIR = ROUTERARENA_DIR / "config" / "eval_config" / "zero-shot"
-DATA_DIR = ROOT / "data" / "calib"
+DATA_DIR = Path(os.environ.get("CALIB_DATA_DIR", ROOT / "data" / "calib"))  # v2 확장 실험은 data/calib_v2
 
 sys.path.insert(0, str(ROOT / "scripts"))
 import _tls  # noqa: E402,F401  사내 TLS 프록시 대응

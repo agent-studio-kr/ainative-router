@@ -4,7 +4,7 @@ RouterArena llm_inference/run.py 는 generated_result 를 만들 때 model_used 
 자체 클라이언트(calib.infer)로 호출하고, 행마다 requested_model / model_used / provider / request_id /
 invoked_at / actual_cost 를 함께 기록한다. token_usage 형식은 RouterArena _call_openrouter 와 동일.
 
-usage: uv run --native-tls python -m arena_router.fill_predictions arena-router [--concurrency 48] [--spend-cap 35]
+usage: uv run --native-tls python -m arena_router.fill_predictions ko-agent-router [--concurrency 48] [--spend-cap 35]
 """
 from __future__ import annotations
 
@@ -30,6 +30,7 @@ def main() -> None:
     ap.add_argument("router_name")
     ap.add_argument("--concurrency", type=int, default=48)
     ap.add_argument("--spend-cap", type=float, default=35.0)
+    ap.add_argument("--no-call", action="store_true", help="호출 없이 기존 결과만으로 채움 (끝나지 않는 호출은 실패 행으로 남김)")
     args = ap.parse_args()
 
     load_dotenv(ROOT / ".env")
@@ -44,7 +45,8 @@ def main() -> None:
             seen.add(k)
             pairs.append((e["prediction"], {"id": _key(e), "prompt": e["prompt"]}))
     print(f"{len(preds)} rows, {len(pairs)} unique calls")
-    asyncio.run(run_pairs(pairs, os.environ["OPENROUTER_API_KEY"], args.concurrency, args.spend_cap, RESULTS_DIR))
+    if not args.no_call:
+        asyncio.run(run_pairs(pairs, os.environ["OPENROUTER_API_KEY"], args.concurrency, args.spend_cap, RESULTS_DIR))
 
     results: dict[tuple[str, str], dict] = {}
     for model in {m for m, _ in pairs}:

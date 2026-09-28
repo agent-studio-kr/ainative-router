@@ -44,11 +44,20 @@ bootstrap (2,000 resamples) over all held-out rows.
 | **task group (selected)** | **77.48** | 76.59 | **+0.89 [+0.36, +1.42]** |
 
 The domain split raised in-sample Arena (79.0) but lowered CV Arena, so it was dropped.
+
+**v2 acceptance (held-out).** Model-pool changes are accepted only on a held-out calibration extension
+(2,177 queries, `calib/build_extra.py`, same construction and leakage checks, disjoint from the fit set). The v2
+policy (fit on the 2,179-query set) beat v1 there by ΔArena +0.50 [+0.27, +0.75] (`scripts/holdout_eval.py`).
 Reports: `artifacts/policy_report.json`, `artifacts/policy_report_domain.json`.
 
 ## 4. Candidate models
 
-Five OpenRouter models were measured on the full calibration set: google/gemma-4-31b-it, openai/gpt-6-luna,
+v2 pool: the five v1 models + `deepseek/deepseek-v4-flash-0731` (registered in RouterArena's price table at its
+OpenRouter list price, $0.021 / $0.32 per M tokens). The extra model came from a post-submission screen of 91
+OpenRouter models (incl. reasoning-off / low-effort variants) on 140 non-RouterArena MMLU-Pro items, followed by
+full-calibration-set runs of the shortlist.
+
+v1: five OpenRouter models were measured on the full calibration set: google/gemma-4-31b-it, openai/gpt-6-luna,
 google/gemini-3-flash-preview, deepseek/deepseek-v4.1-flash, qwen/qwen3-235b-a22b-2507. The shortlist came from a
 cost/quality probe of 23 OpenRouter models on 166 non-RouterArena items (MMLU-Pro test items absent from RouterArena,
 and AIME 2025 problems absent from RouterArena). Disclosure: the list of 23 probed candidates was informed by the

@@ -67,6 +67,14 @@ def main() -> None:
                 if rec["id"] in rows:
                     rows[rec["id"]]["answer"] = rec["answer"]
     prices = price_table()
+    # 채점 캐시: 같은 (모델, 문항, 요청 ID)는 다시 채점하지 않는다 (LCB 코드 실행이 느림)
+    cache: dict[tuple[str, str, str], float] = {}
+    scored_path = DATA_DIR / "scored.jsonl"
+    if scored_path.exists():
+        for rec in map(json.loads, scored_path.read_text().splitlines()):
+            # 요청 ID 없는 기록(v1 채점본)은 결과 파일을 그대로 복사한 행이므로 (모델, 문항)으로 재사용; 무효 행은 재채점
+            if rec.get("valid"):
+                cache[(rec["model"], rec["id"], rec.get("request_id"))] = rec["accuracy"]
     records, jobs = [], []
     for path in sorted((DATA_DIR / "results").glob("*.jsonl")):
         latest: dict[str, dict] = {}
@@ -85,25 +93,31 @@ def main() -> None:
                 "dataset_name": row["dataset_name"],
                 "group_id": row["group_id"],
                 "valid": valid,
-                "official_cost": official_cost(usage, prices[model]) if valid else 0.0,
+                "official_cost": official_cost(usage, prices[model.split("@")[0]]) if valid else 0.0,
                 "actual_cost": rec.get("actual_cost") or 0.0,
                 "finish_reason": rec.get("finish_reason"),
                 "model_used": rec.get("model_used"),
+                "request_id": rec.get("request_id"),
             })
-            jobs.append((row["config_name"], rec.get("content") or "", row["answer"]) if valid else None)
+            hit = cache.get((model, id_, rec.get("request_id")), cache.get((model, id_, None)))
+            if valid and hit is not None:
+                records[-1]["accuracy_cached"] = hit
+                jobs.append(None)
+            else:
+                jobs.append((row["config_name"], rec.get("content") or "", row["answer"]) if valid else None)
 
     todo = [(i, j) for i, j in enumerate(jobs) if j is not None]
     with ProcessPoolExecutor(max_workers=args.workers) as ex:
         scores = list(ex.map(_score_one, [j for _, j in todo], chunksize=16))
     for rec in records:
-        rec["accuracy"] = 0.0
+        rec["accuracy"] = rec.pop("accuracy_cached", 0.0)
     for (i, _), s in zip(todo, scores):
         records[i]["accuracy"] = s
 
     with (DATA_DIR / "scored.jsonl").open("w", encoding="utf-8") as f:
         for rec in records:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    print(f"scored {len(records)} records ({len(todo)} valid)")
+    print(f"scored {len(records)} records ({len(todo)} newly scored, {len(cache)} cache entries)")
 
 
 if __name__ == "__main__":
