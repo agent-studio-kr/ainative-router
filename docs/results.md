@@ -1,5 +1,16 @@
 # Results
 
+## Official CI (RouterArena PR [#213](https://github.com/RouteWorks/RouterArena/pull/213))
+
+| Arena | Accuracy | Cost / 1K | Robustness | Opt.Sel | Opt.Cost | Opt.Acc |
+|---:|---:|---:|---:|---:|---:|---:|
+| **76.25** | 78.64% | $0.379 | 90.24 | 7.51 | 16.33 | 92.93 |
+
+The local run below differs by 0.08 pp accuracy (~7 queries), most likely code-execution timing on LiveCodeBench
+items (Linux CI vs. macOS); cost and robustness are identical.
+
+## Local run
+
 RouterArena official scripts run locally on RouterArena commit `f371ef0` + `patches/routerarena-arena-router.patch`.
 
 ## RouterArena `full` (8,400 queries) and `robustness` (420)

@@ -7,11 +7,11 @@ Each query is mapped to a **task group** (from the structure of its instruction)
 mapped to the model with the best accuracy–cost trade-off, chosen on an **external calibration set that
 contains no RouterArena items**.
 
-## Results (RouterArena `full`, official scripts run locally)
+## Results (RouterArena `full`, official CI on [PR #213](https://github.com/RouteWorks/RouterArena/pull/213))
 
 | Arena Score | Accuracy | Cost / 1K queries | Robustness | Opt.Sel | Opt.Cost | Opt.Acc |
 |---:|---:|---:|---:|---:|---:|---:|
-| **76.32** | 78.72% | $0.379 | **90.24** | 7.51 | 16.47 | 93.23 |
+| **76.25** | 78.64% | $0.379 | **90.24** | 7.51 | 16.33 | 92.93 |
 
 Details, cross-validation, and routing shares: [docs/results.md](docs/results.md).
 
