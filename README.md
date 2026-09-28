@@ -11,7 +11,7 @@ contains no RouterArena items**.
 
 | Version | Arena Score | Accuracy | Cost / 1K queries | Robustness | Opt.Sel | Opt.Cost | Opt.Acc |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| **v2** (current, local official scripts) | **76.64** | 79.13% | $0.385 | 88.81 | 6.43 | 15.94 | 92.69 |
+| **v2** (current, official CI) | **76.57** | 79.04% | $0.385 | 88.81 | 6.43 | 15.80 | 92.40 |
 | v1 (official CI) | 76.25 | 78.64% | $0.379 | 90.24 | 7.51 | 16.33 | 92.93 |
 
 v2 adds one model to the pool; it was accepted on a fresh held-out calibration extension **before** RouterArena

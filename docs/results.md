@@ -19,6 +19,10 @@ built and every candidate model was run on it. Neither v1 nor v2 saw these rows:
 
 Report: `artifacts/policy_holdout_report.json` (`scripts/holdout_eval.py`).
 
+**RouterArena official CI** (PR #213, `ko-agent-router`): Arena **76.57**, accuracy 79.04%, $0.385 / 1K, robustness
+88.81, Opt.Sel / Opt.Cost / Opt.Acc 6.43 / 15.80 / 92.40, 0 abnormal entries. The first CI attempt was aborted by a
+runner shutdown mid-scoring; the re-run completed. Local vs CI differ by 0.09 pp accuracy (LiveCodeBench timing).
+
 **RouterArena, local official scripts** (RouterArena `f371ef0` + patch):
 
 | | v1 | v2 |
