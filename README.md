@@ -1,4 +1,6 @@
-# Arena Router
+# Ko-Agent Router
+
+> Submitted to RouterArena as `arena-router` (package name `arena_router`).
 
 A task-aware LLM router for the [RouterArena](https://github.com/RouteWorks/RouterArena) benchmark.
 Each query is mapped to a **task group** (from the structure of its instruction), and each task group is
