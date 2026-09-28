@@ -1,0 +1,145 @@
+{
+ "load": {
+  "rows": 6409,
+  "missing_model_results": 0,
+  "used": 6409
+ },
+ "train_rows": 4356,
+ "test_rows": 2053,
+ "A": {
+  "acc": 0.8073765290639087,
+  "cost_per_1k": 0.42066944431093223,
+  "arena": 0.7787287275267041
+ },
+ "B": {
+  "acc": 0.7986519036856689,
+  "cost_per_1k": 0.1716357071998763,
+  "arena": 0.783476018952894,
+  "delta_arena": 0.0047472914261899035,
+  "ci97_5": [
+   -0.007804763726562654,
+   0.016014125332630805
+  ],
+  "pass": false,
+  "changed_cells": {
+   "ArcMMLU|GPQA|GeoBench|MMLU|MMLUPro|MathQA|MedMCQA|MusicTheoryBench|OpenTDB|PubMedQA|SocialiQA|SuperGLUE-CausalReasoning": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "ChessInstruct": [
+    "openai/gpt-6-luna",
+    "google/gemini-3-flash-preview"
+   ],
+   "Ethics_commonsense|Ethics_justice": [
+    "deepseek/deepseek-v4.1-flash",
+    "deepseek/deepseek-v4-flash-0731"
+   ],
+   "Ethics_deontology": [
+    "deepseek/deepseek-v4.1-flash",
+    "google/gemma-4-31b-it"
+   ],
+   "Ethics_virtue": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "SuperGLUE-Entailment": [
+    "openai/gpt-6-luna",
+    "deepseek/deepseek-v4-flash-0731"
+   ],
+   "SuperGLUE-QA": [
+    "qwen/qwen3-235b-a22b-2507",
+    "deepseek/deepseek-v4.1-flash"
+   ],
+   "SuperGLUE-RC": [
+    "qwen/qwen3-235b-a22b-2507",
+    "deepseek/deepseek-v4-flash-0731"
+   ],
+   "SuperGLUE-Wic": [
+    "google/gemini-3-flash-preview",
+    "deepseek/deepseek-v4.1-flash"
+   ],
+   "SuperGLUE-Wsc": [
+    "google/gemini-3-flash-preview",
+    "google/gemma-4-31b-it"
+   ],
+   "WMT19-cs-en": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "WMT19-fi-en": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "WMT19-gu-en": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "WMT19-lt-en": [
+    "deepseek/deepseek-v4-flash-0731",
+    "openai/gpt-6-luna"
+   ],
+   "WMT19-ru-en": [
+    "google/gemini-3-flash-preview",
+    "google/gemma-4-31b-it"
+   ],
+   "WMT19-zh-en": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ]
+  }
+ },
+ "C": {
+  "acc": 0.8052597073992025,
+  "cost_per_1k": 0.324711911341196,
+  "arena": 0.7808054386753205,
+  "delta_arena": 0.002076711148616406,
+  "ci97_5": [
+   -0.007753646129147323,
+   0.011423103201743702
+  ],
+  "pass": false,
+  "changed_cells": {
+   "ChessInstruct": [
+    "openai/gpt-6-luna",
+    "google/gemini-3-flash-preview"
+   ],
+   "Ethics_commonsense|Ethics_justice": [
+    "deepseek/deepseek-v4.1-flash",
+    "deepseek/deepseek-v4-flash-0731"
+   ],
+   "Ethics_virtue": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "SuperGLUE-Entailment": [
+    "openai/gpt-6-luna",
+    "deepseek/deepseek-v4-flash-0731"
+   ],
+   "SuperGLUE-QA": [
+    "qwen/qwen3-235b-a22b-2507",
+    "deepseek/deepseek-v4.1-flash"
+   ],
+   "SuperGLUE-RC": [
+    "qwen/qwen3-235b-a22b-2507",
+    "deepseek/deepseek-v4.1-flash"
+   ],
+   "SuperGLUE-Wic": [
+    "google/gemini-3-flash-preview",
+    "deepseek/deepseek-v4.1-flash"
+   ],
+   "WMT19-cs-en": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "WMT19-fi-en": [
+    "google/gemini-3-flash-preview",
+    "openai/gpt-6-luna"
+   ],
+   "WMT19-lt-en": [
+    "deepseek/deepseek-v4-flash-0731",
+    "openai/gpt-6-luna"
+   ]
+  }
+ },
+ "decision": "A (keep v2)"
+}

@@ -28,16 +28,16 @@ index ae82c1d..48aadd7 100644
 +    "input_token_price_per_million": 0.021,
 +    "output_token_price_per_million": 0.32
    }
-diff --git a/router_inference/config/ko-agent-router.json b/router_inference/config/ko-agent-router.json
+diff --git a/router_inference/config/ainative-router.json b/router_inference/config/ainative-router.json
 new file mode 100644
-index 0000000..6599762
+index 0000000..49edede
 --- /dev/null
-+++ b/router_inference/config/ko-agent-router.json
++++ b/router_inference/config/ainative-router.json
 @@ -0,0 +1,15 @@
 +{
 +  "pipeline_params": {
-+    "router_name": "ko-agent-router",
-+    "router_cls_name": "KoAgentRouter",
++    "router_name": "ainative-router",
++    "router_cls_name": "AINativeRouter",
 +    "models": [
 +      "google/gemma-4-31b-it",
 +      "openai/gpt-6-luna",
@@ -46,31 +46,31 @@ index 0000000..6599762
 +      "qwen/qwen3-235b-a22b-2507",
 +      "deepseek/deepseek-v4-flash-0731"
 +    ],
-+    "description": "Ko-Agent Router: task-group routing policy (per-cell model assignment + lambda sweep on Arena Score) fit only on a 2,179-query external calibration set built from the same public source benchmarks with all RouterArena items removed (exact, template-stripped MiniLM >=0.85, and source-ID checks). v2 adds deepseek/deepseek-v4-flash-0731 to the pool; accepted on a fresh 2,177-query held-out calibration extension (same construction, disjoint from RouterArena and from the fit set). Policy/signals hash-frozen before routing RouterArena. Per-row provenance (requested_model, model_used, provider, request_id, invoked_at) recorded."
++    "description": "AINative Router: task-group routing policy (per-cell model assignment + lambda sweep on Arena Score) fit only on a 2,179-query external calibration set built from the same public source benchmarks with all RouterArena items removed (exact, template-stripped MiniLM >=0.85, and source-ID checks). v2 adds deepseek/deepseek-v4-flash-0731 to the pool; accepted on a fresh 2,177-query held-out calibration extension (same construction, disjoint from RouterArena and from the fit set). Policy/signals hash-frozen before routing RouterArena. Per-row provenance (requested_model, model_used, provider, request_id, invoked_at) recorded."
 +  }
 +}
 diff --git a/router_inference/router/__init__.py b/router_inference/router/__init__.py
-index 4104cf1..851af23 100644
+index 4104cf1..5268be2 100644
 --- a/router_inference/router/__init__.py
 +++ b/router_inference/router/__init__.py
 @@ -13,2 +13,3 @@ from router_inference.router.lynkr_router import LynkrRouter
  from router_inference.router.cruq_sc_router import CruqSCRouter
-+from router_inference.router.ko_agent_router import KoAgentRouter
++from router_inference.router.ainative_router import AINativeRouter
  
 @@ -23,2 +24,3 @@ __all__ = [
      "CruqSCRouter",
-+    "KoAgentRouter",
++    "AINativeRouter",
  ]
-diff --git a/router_inference/router/ko_agent_router.py b/router_inference/router/ko_agent_router.py
+diff --git a/router_inference/router/ainative_router.py b/router_inference/router/ainative_router.py
 new file mode 100644
-index 0000000..48f0192
+index 0000000..b6fd1ba
 --- /dev/null
-+++ b/router_inference/router/ko_agent_router.py
++++ b/router_inference/router/ainative_router.py
 @@ -0,0 +1,38 @@
 +# SPDX-FileCopyrightText: Copyright contributors to the RouterArena project
 +# SPDX-License-Identifier: Apache-2.0
 +
-+"""Ko-Agent Router adapter.
++"""AINative Router adapter.
 +
 +Task-group routing policy fit only on an external calibration set (public source benchmarks with every
 +RouterArena item removed; leakage-checked). The policy, signal code and kNN index are hash-frozen
@@ -93,7 +93,7 @@ index 0000000..48f0192
 +    sys.path.insert(0, _PROJECT_ROOT)
 +
 +
-+class KoAgentRouter(BaseRouter):
++class AINativeRouter(BaseRouter):
 +    def __init__(self, router_name: str):
 +        super().__init__(router_name)
 +        from arena_router.router import ArenaRouter as _Impl
@@ -106,12 +106,12 @@ index 0000000..48f0192
 +    def _get_prediction(self, query: str) -> str:
 +        return self._impl.route(query)
 diff --git a/universal_model_names.py b/universal_model_names.py
-index 884554a..0aa22cf 100644
+index 884554a..b95b553 100644
 --- a/universal_model_names.py
 +++ b/universal_model_names.py
 @@ -140,2 +140,6 @@ universal_names = [
      "google/gemma-4-31b-it",
-+    # Ko-Agent Router pool additions (OpenRouter-served)
++    # AINative Router pool additions (OpenRouter-served)
 +    "openai/gpt-6-luna",
 +    "deepseek/deepseek-v4.1-flash",
 +    "deepseek/deepseek-v4-flash-0731",

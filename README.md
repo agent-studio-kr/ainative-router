@@ -1,6 +1,6 @@
-# Ko-Agent Router
+# AINative Router
 
-> Submitted to RouterArena as `ko-agent-router` (v1 was submitted as `arena-router`; Python package name `arena_router`).
+> Submitted to RouterArena as `ainative-router` (earlier IDs: `arena-router` for v1, `ainative-router` for v2; Python package name `arena_router`).
 
 A task-aware LLM router for the [RouterArena](https://github.com/RouteWorks/RouterArena) benchmark.
 Each query is mapped to a **task group** (from the structure of its instruction), and each task group is
@@ -15,7 +15,8 @@ contains no RouterArena items**.
 | v1 (official CI) | 76.25 | 78.64% | $0.379 | 90.24 | 7.51 | 16.33 | 92.93 |
 
 v2 adds one model to the pool; it was accepted on a fresh held-out calibration extension **before** RouterArena
-was routed (ΔArena +0.50, 95% CI [+0.27, +0.75] vs v1).
+was routed (ΔArena +0.50, 95% CI [+0.27, +0.75] vs v1). A second, pre-registered held-out extension tested two
+refits against v2; neither passed, so v2 stands ([docs/results.md](docs/results.md)).
 
 Details, cross-validation, and routing shares: [docs/results.md](docs/results.md).
 
@@ -76,11 +77,11 @@ regenerated deterministically from public sources by `calib.build` (see below).
 ### Setup
 
 ```bash
-git clone https://github.com/agent-studio-kr/arena-router && cd arena-router
+git clone https://github.com/agent-studio-kr/ainative-router && cd ainative-router
 uv sync
 git clone https://github.com/RouteWorks/RouterArena third_party/RouterArena
 git -C third_party/RouterArena checkout f371ef0
-git -C third_party/RouterArena apply ../../patches/routerarena-ko-agent-router.patch
+git -C third_party/RouterArena apply ../../patches/routerarena-ainative-router.patch
 (cd third_party/RouterArena && ../../.venv/bin/python ../../scripts/ra_run.py scripts/process_datasets/prep_datasets.py)
 ```
 
@@ -104,21 +105,21 @@ uv run python -m arena_router.freeze --rebuild-index --verify        # -> "freez
 
 # 3. route RouterArena and compare with the submitted predictions
 cd third_party/RouterArena
-../../.venv/bin/python ../../scripts/ra_run.py router_inference/generate_prediction_file.py ko-agent-router full
-../../.venv/bin/python ../../scripts/ra_run.py router_inference/generate_prediction_file.py ko-agent-router robustness
-../../.venv/bin/python ../../scripts/ra_run.py llm_evaluation/run.py ko-agent-router robustness   # -> 0.8881
+../../.venv/bin/python ../../scripts/ra_run.py router_inference/generate_prediction_file.py ainative-router full
+../../.venv/bin/python ../../scripts/ra_run.py router_inference/generate_prediction_file.py ainative-router robustness
+../../.venv/bin/python ../../scripts/ra_run.py llm_evaluation/run.py ainative-router robustness   # -> 0.8881
 ```
 
 Routing is deterministic: the `prediction` fields match the submitted files.
 
 ### B. Re-score the submitted generations — no API cost
 
-Put the submitted `ko-agent-router.json` (with `generated_result`) in `router_inference/predictions/`, then:
+Put the submitted `ainative-router.json` (with `generated_result`) in `router_inference/predictions/`, then:
 
 ```bash
-../../.venv/bin/python ../../scripts/ra_run.py router_inference/check_config_prediction_files.py ko-agent-router full --check-generated-result
-../../.venv/bin/python ../../scripts/ra_run.py tools/audit_token_accounting.py ko-agent-router --strict
-../../.venv/bin/python ../../scripts/ra_run.py llm_evaluation/run.py ko-agent-router full    # -> 0.7664
+../../.venv/bin/python ../../scripts/ra_run.py router_inference/check_config_prediction_files.py ainative-router full --check-generated-result
+../../.venv/bin/python ../../scripts/ra_run.py tools/audit_token_accounting.py ainative-router --strict
+../../.venv/bin/python ../../scripts/ra_run.py llm_evaluation/run.py ainative-router full    # -> 0.7664
 ```
 
 ### C. Rebuild everything from scratch — ~$20 of OpenRouter calls
@@ -135,7 +136,7 @@ CALIB_DATA_DIR=data/calib_v2 uv run python -m calib.score_results
 CALIB_DATA_DIR=data/calib_v2 uv run python scripts/holdout_eval.py artifacts/policy_v1.json   # -> artifacts/policy_holdout_report.json
 uv run python -m arena_router.freeze                              # re-freeze (new FREEZE.json)
 # then A.3, and fill generations with provenance (~$5):
-uv run python -m arena_router.fill_predictions ko-agent-router
+uv run python -m arena_router.fill_predictions ainative-router
 ```
 
 LLM outputs are sampled at provider defaults (as in RouterArena's OpenRouter client), so re-running C gives

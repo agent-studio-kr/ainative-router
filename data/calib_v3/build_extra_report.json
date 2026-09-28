@@ -1,0 +1,205 @@
+{
+ "added": 2081,
+ "configs": {
+  "AIME": {
+   "target": 20,
+   "fresh_candidates": 39,
+   "selected": 20
+  },
+  "ArcMMLU": {
+   "target": 94,
+   "fresh_candidates": 242,
+   "selected": 94
+  },
+  "AsDiv": {
+   "target": 21,
+   "fresh_candidates": 81,
+   "selected": 21
+  },
+  "ChessInstruct": {
+   "target": 20,
+   "fresh_candidates": 69,
+   "selected": 20
+  },
+  "ChessInstruct_mcq": {
+   "target": 20,
+   "fresh_candidates": 67,
+   "selected": 20
+  },
+  "Ethics_commonsense": {
+   "target": 24,
+   "fresh_candidates": 92,
+   "selected": 24
+  },
+  "Ethics_deontology": {
+   "target": 20,
+   "fresh_candidates": 47,
+   "selected": 20
+  },
+  "Ethics_justice": {
+   "target": 20,
+   "fresh_candidates": 77,
+   "selected": 20
+  },
+  "Ethics_virtue": {
+   "target": 20,
+   "fresh_candidates": 76,
+   "selected": 20
+  },
+  "FinQA": {
+   "target": 20,
+   "fresh_candidates": 76,
+   "selected": 20
+  },
+  "GSM8K": {
+   "target": 20,
+   "fresh_candidates": 78,
+   "selected": 20
+  },
+  "GeoBench": {
+   "target": 79,
+   "fresh_candidates": 267,
+   "selected": 79
+  },
+  "GeoGraphyData": {
+   "target": 20,
+   "fresh_candidates": 75,
+   "selected": 20
+  },
+  "LiveCodeBench": {
+   "target": 92,
+   "fresh_candidates": 0,
+   "selected": 0
+  },
+  "MATH": {
+   "target": 20,
+   "fresh_candidates": 78,
+   "selected": 20
+  },
+  "MMLU": {
+   "target": 43,
+   "fresh_candidates": 14,
+   "selected": 14
+  },
+  "MMLUPro": {
+   "target": 602,
+   "fresh_candidates": 1824,
+   "selected": 601
+  },
+  "MathQA": {
+   "target": 38,
+   "fresh_candidates": 148,
+   "selected": 38
+  },
+  "MedMCQA": {
+   "target": 72,
+   "fresh_candidates": 270,
+   "selected": 72
+  },
+  "MusicTheoryBench": {
+   "target": 53,
+   "fresh_candidates": 47,
+   "selected": 47
+  },
+  "NarrativeQA": {
+   "target": 91,
+   "fresh_candidates": 340,
+   "selected": 91
+  },
+  "OpenTDB": {
+   "target": 211,
+   "fresh_candidates": 627,
+   "selected": 211
+  },
+  "PubMedQA": {
+   "target": 111,
+   "fresh_candidates": 254,
+   "selected": 111
+  },
+  "QANTA": {
+   "target": 153,
+   "fresh_candidates": 490,
+   "selected": 153
+  },
+  "SocialiQA": {
+   "target": 20,
+   "fresh_candidates": 78,
+   "selected": 20
+  },
+  "SuperGLUE-CausalReasoning": {
+   "target": 20,
+   "fresh_candidates": 71,
+   "selected": 20
+  },
+  "SuperGLUE-ClozeTest": {
+   "target": 20,
+   "fresh_candidates": 78,
+   "selected": 20
+  },
+  "SuperGLUE-Entailment": {
+   "target": 20,
+   "fresh_candidates": 75,
+   "selected": 20
+  },
+  "SuperGLUE-QA": {
+   "target": 20,
+   "fresh_candidates": 77,
+   "selected": 20
+  },
+  "SuperGLUE-RC": {
+   "target": 20,
+   "fresh_candidates": 77,
+   "selected": 20
+  },
+  "SuperGLUE-Wic": {
+   "target": 24,
+   "fresh_candidates": 94,
+   "selected": 24
+  },
+  "SuperGLUE-Wsc": {
+   "target": 20,
+   "fresh_candidates": 72,
+   "selected": 20
+  },
+  "WMT19-cs-en": {
+   "target": 20,
+   "fresh_candidates": 75,
+   "selected": 20
+  },
+  "WMT19-de-en": {
+   "target": 20,
+   "fresh_candidates": 74,
+   "selected": 20
+  },
+  "WMT19-fi-en": {
+   "target": 20,
+   "fresh_candidates": 71,
+   "selected": 20
+  },
+  "WMT19-gu-en": {
+   "target": 21,
+   "fresh_candidates": 80,
+   "selected": 21
+  },
+  "WMT19-kk-en": {
+   "target": 20,
+   "fresh_candidates": 78,
+   "selected": 20
+  },
+  "WMT19-lt-en": {
+   "target": 20,
+   "fresh_candidates": 74,
+   "selected": 20
+  },
+  "WMT19-ru-en": {
+   "target": 20,
+   "fresh_candidates": 73,
+   "selected": 20
+  },
+  "WMT19-zh-en": {
+   "target": 20,
+   "fresh_candidates": 76,
+   "selected": 20
+  }
+ }
+}

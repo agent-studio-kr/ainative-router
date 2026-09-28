@@ -4,7 +4,7 @@ RouterArena llm_inference/run.py 는 generated_result 를 만들 때 model_used 
 자체 클라이언트(calib.infer)로 호출하고, 행마다 requested_model / model_used / provider / request_id /
 invoked_at / actual_cost 를 함께 기록한다. token_usage 형식은 RouterArena _call_openrouter 와 동일.
 
-usage: uv run --native-tls python -m arena_router.fill_predictions ko-agent-router [--concurrency 48] [--spend-cap 35]
+usage: uv run --native-tls python -m arena_router.fill_predictions ainative-router [--concurrency 48] [--spend-cap 35]
 """
 from __future__ import annotations
 

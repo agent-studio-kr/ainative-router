@@ -50,6 +50,23 @@ Other options considered on the same data and **not** adopted:
 | + gemma-4-31b `reasoning: high` arm | held-out +0.46 (vs +0.50 without) | No gain; not expressible in the prediction format |
 | task × domain cells | CV +0.38 [−0.16, +0.91] vs task-only | CI includes 0 |
 
+## Second held-out extension (pre-registered; v2 kept)
+
+Pre-registration: [`docs/prereg_v3.md`](prereg_v3.md), committed and pushed before the data existed. A second
+extension of 2,053 queries (`cal3_*`; excludes RouterArena, the fit set and the first extension; LiveCodeBench had
+no unused items left) was run on the six v2 models. Candidates were refit on the 4,356 v2 rows and compared with the
+frozen v2 policy on `cal3_*` only (Bonferroni 97.5% intervals):
+
+| Policy | Arena | Accuracy | $/1K | ΔArena vs v2 [97.5% CI] |
+|---|---:|---:|---:|---|
+| A: v2 (frozen) | 77.87 | 80.7% | 0.421 | — |
+| B: task cells, refit on 4,356 rows | 78.35 | 79.9% | 0.172 | +0.47 [−0.78, +1.60] |
+| C: task × domain, refit on 4,356 rows | 78.08 | 80.5% | 0.325 | +0.21 [−0.78, +1.14] |
+
+Neither candidate passed, so **v2 stays**. B's point gain comes from moving multiple-choice to the much cheaper
+gpt-6-luna at −0.9 pp accuracy; the interval is too wide to rely on. Report: `artifacts/prereg_v3_report.json`
+(`scripts/eval_prereg_v3.py`).
+
 ## v1 — official CI (RouterArena PR [#213](https://github.com/RouteWorks/RouterArena/pull/213))
 
 | Arena | Accuracy | Cost / 1K | Robustness | Opt.Sel | Opt.Cost | Opt.Acc |

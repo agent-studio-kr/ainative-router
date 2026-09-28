@@ -8,7 +8,7 @@ __pycache__/
 *.pyc
 graft/
 
-# third-party checkout (apply patches/routerarena-ko-agent-router.patch instead)
+# third-party checkout (apply patches/routerarena-ainative-router.patch instead)
 third_party/
 
 # internal notes (not part of the public release)
@@ -44,3 +44,9 @@ data/calib_v2/lcb_answers.jsonl
 data/calib_v2/results/
 data/calib_v2/*.log
 data/calib_v2/cache/
+data/calib_v3/calib_set.jsonl
+data/calib_v3/calib_prompts.jsonl
+data/calib_v3/lcb_answers.jsonl
+data/calib_v3/results/
+data/calib_v3/*.log
+data/calib_v3/cache/

@@ -60,6 +60,10 @@ RouterArena **and** every source ID / question of the 2,179-query set; `calib.le
 leakage report `data/calib_v2/leakage_report.json`. The extension is used only to validate policies fit on the
 original set, never to fit them.
 
+A second extension (`--base data/calib_v2 --prefix cal3 --seed 23 --out data/calib_v3`; 2,081 drawn, 28 dropped,
+2,053 kept) excludes both earlier sets and was used only for the pre-registered test in `docs/prereg_v3.md`.
+Manifest: `data/calib_v3/calib_manifest.jsonl`.
+
 ## Known biases
 
 - LiveCodeBench v6 increment is harder than RouterArena's release_v2 items (55% "hard"); absolute code accuracy is
