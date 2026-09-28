@@ -1,0 +1,43 @@
+{
+ "rows": 2202,
+ "exact_question": 0,
+ "context_prefix": 0,
+ "embedding_ge_0.85": 23,
+ "duplicate_source_ids": 0,
+ "flagged_by_config": {
+  "Ethics_deontology": 1,
+  "GeoBench": 1,
+  "MMLU": 11,
+  "MMLUPro": 5,
+  "MathQA": 1,
+  "MusicTheoryBench": 3,
+  "SuperGLUE-Entailment": 1
+ },
+ "max_sim_p99": 0.9945855224132538,
+ "flagged_ids": [
+  "cal_Ethics_deontology_00209",
+  "cal_GeoBench_00367",
+  "cal_MMLUPro_00718",
+  "cal_MMLUPro_00775",
+  "cal_MMLUPro_00879",
+  "cal_MMLUPro_00971",
+  "cal_MMLUPro_01085",
+  "cal_MMLU_00514",
+  "cal_MMLU_00517",
+  "cal_MMLU_00519",
+  "cal_MMLU_00524",
+  "cal_MMLU_00527",
+  "cal_MMLU_00533",
+  "cal_MMLU_00534",
+  "cal_MMLU_00535",
+  "cal_MMLU_00540",
+  "cal_MMLU_00542",
+  "cal_MMLU_00549",
+  "cal_MathQA_01155",
+  "cal_MusicTheoryBench_01274",
+  "cal_MusicTheoryBench_01277",
+  "cal_MusicTheoryBench_01303",
+  "cal_SuperGLUE-Entailment_01949"
+ ],
+ "dropped": true
+}

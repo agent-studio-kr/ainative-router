@@ -1,0 +1,30 @@
+[project]
+name = "ai-model-router"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "datasets>=5.0.1",
+    "fuzzywuzzy>=0.18.0",
+    "httpx>=0.28.1",
+    "jieba>=0.42.1",
+    "latex2sympy2>=1.9.1",
+    "numpy>=2.5.3",
+    "pandas>=3.0.6",
+    "pytest>=9.1.1",
+    "python-dotenv>=1.2.3",
+    "python-levenshtein>=0.27.5",
+    "pyyaml>=6.0.3",
+    "regex>=2026.9.10",
+    "rouge>=1.0.1",
+    "scikit-learn>=1.9.1",
+    "sentence-transformers>=6.1.0",
+    "sympy>=1.14.0",
+    "torch>=2.14.0",
+    "transformers>=5.17.0",
+    "truststore>=0.10.4",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

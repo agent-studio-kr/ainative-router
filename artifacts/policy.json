@@ -1,0 +1,40 @@
+{
+ "models": [
+  "google/gemma-4-31b-it",
+  "openai/gpt-6-luna",
+  "google/gemini-3-flash-preview",
+  "deepseek/deepseek-v4.1-flash",
+  "qwen/qwen3-235b-a22b-2507"
+ ],
+ "default_model": "google/gemini-3-flash-preview",
+ "lambda": 58.61756269845898,
+ "task_policy": {
+  "AIME|AsDiv": "google/gemma-4-31b-it",
+  "ArcMMLU|GPQA|GeoBench|MMLU|MMLUPro|MathQA|MedMCQA|MusicTheoryBench|OpenTDB|PubMedQA|SocialiQA|SuperGLUE-CausalReasoning": "google/gemini-3-flash-preview",
+  "ChessInstruct": "openai/gpt-6-luna",
+  "ChessInstruct_mcq": "google/gemini-3-flash-preview",
+  "Ethics_commonsense|Ethics_justice": "deepseek/deepseek-v4.1-flash",
+  "Ethics_deontology": "deepseek/deepseek-v4.1-flash",
+  "Ethics_virtue": "google/gemini-3-flash-preview",
+  "FinQA": "qwen/qwen3-235b-a22b-2507",
+  "GSM8K|MATH": "google/gemma-4-31b-it",
+  "GeoGraphyData|QANTA": "google/gemini-3-flash-preview",
+  "LiveCodeBench": "google/gemma-4-31b-it",
+  "NarrativeQA": "google/gemma-4-31b-it",
+  "SuperGLUE-ClozeTest": "deepseek/deepseek-v4.1-flash",
+  "SuperGLUE-Entailment": "openai/gpt-6-luna",
+  "SuperGLUE-QA": "qwen/qwen3-235b-a22b-2507",
+  "SuperGLUE-RC": "qwen/qwen3-235b-a22b-2507",
+  "SuperGLUE-Wic": "google/gemini-3-flash-preview",
+  "SuperGLUE-Wsc": "google/gemini-3-flash-preview",
+  "WMT19-cs-en": "google/gemini-3-flash-preview",
+  "WMT19-de-en": "google/gemma-4-31b-it",
+  "WMT19-fi-en": "google/gemini-3-flash-preview",
+  "WMT19-gu-en": "google/gemini-3-flash-preview",
+  "WMT19-kk-en": "google/gemini-3-flash-preview",
+  "WMT19-lt-en": "openai/gpt-6-luna",
+  "WMT19-ru-en": "google/gemini-3-flash-preview",
+  "WMT19-zh-en": "google/gemini-3-flash-preview"
+ },
+ "task_domain_policy": {}
+}
