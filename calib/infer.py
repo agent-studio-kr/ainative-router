@@ -108,7 +108,9 @@ def done_ids(model: str, results_dir: Path = RESULTS_DIR) -> set[str]:
     path = result_path(model, results_dir)
     if not path.exists():
         return set()
-    return {json.loads(l)["id"] for l in path.read_text().splitlines() if "error" not in json.loads(l)}
+    # 오류 없이 빈 답(공백 포함)이 온 경우도 다시 호출한다
+    recs = [json.loads(l) for l in path.read_text().splitlines()]
+    return {r["id"] for r in recs if "error" not in r and (r.get("content") or "").strip()}
 
 
 async def run_pairs(

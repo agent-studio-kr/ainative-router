@@ -12,12 +12,13 @@ The official CI result is posted on [PR #213](https://github.com/RouteWorks/Rout
 | Cost per 1K queries (RouterArena price table) | $0.547 |
 | Robustness (1 − flip rate) | 85.00 |
 | Opt.Sel / Opt.Cost / Opt.Acc | 4.24 / 22.24 / 89.79 |
-| Failed generations among 8,400 regular rows (scored 0) | 6 |
+| Failed generations among 8,400 regular rows | 0 (after re-requesting 6 empty / errored responses) |
 
 - `check_config_prediction_files.py --check-generated-result`: all checks passed.
 - `tools/audit_token_accounting.py --strict`: 0 unaccounted reasoning tokens.
-- The 6 failed rows are provider errors / time-outs that persisted over retries (5 × up to 15 min) and one
-  whitespace-only answer; they are recorded as failed generations.
+- The first CI run (Arena 75.41) had 6 rows with empty responses (provider-side `finish_reason: error`, one
+  whitespace-only answer, one runaway generation). Empty responses are now re-requested like errors; the numbers
+  above are from before that fix and are superseded by the CI result on the PR.
 
 Routing share (8,400 regular rows): deepseek-v4.1-flash 71.1%, gemini-3-flash 14.1%, deepseek-v4-flash-0731 9.8%,
 gemma-4-31b 5.0%.

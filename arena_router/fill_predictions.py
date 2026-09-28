@@ -52,7 +52,7 @@ def main() -> None:
     for model in {m for m, _ in pairs}:
         ok = done_ids(model, RESULTS_DIR)
         for rec in map(json.loads, result_path(model, RESULTS_DIR).read_text().splitlines()):
-            if "error" not in rec or rec["id"] not in ok:
+            if ("error" not in rec and (rec.get("content") or "").strip()) or rec["id"] not in ok:
                 results[(model, rec["id"])] = rec
 
     missing = 0
