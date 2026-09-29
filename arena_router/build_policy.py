@@ -105,6 +105,34 @@ def bagged_fit(obs: list[Obs], models: list[str], n_bag: int, seed: int) -> Poli
     return base
 
 
+def budget_fit(obs: list[Obs], models: list[str], ratio: float) -> Policy:
+    """절약 모드: 정확도 우선 정책(λ=0) 비용의 ratio 배 이하 예산에서 정확도가 가장 높은 λ 정책 (보정 데이터 기준)."""
+    from arena_router.policy import LAMBDAS
+
+    grid = [0.0] + list(np.geomspace(0.5, 20000, 300))
+    best, base_cost = None, None
+    for lam in grid:
+        p = _policy_at(obs, models, lam)
+        acc, cost, _ = evaluate(p, obs)
+        if base_cost is None:
+            base_cost = cost
+        if cost <= base_cost * ratio and (best is None or acc > best[0]):
+            best = (acc, p)
+    return best[1]
+
+
+def _policy_at(obs: list[Obs], models: list[str], lam: float) -> Policy:
+    from arena_router.policy import _cell_stats, _pick, _shrink
+
+    _, g = _cell_stats(obs, models)
+    by: dict[str, list[Obs]] = defaultdict(list)
+    for o in obs:
+        by[o.task].append(o)
+    p = Policy(models, _pick(g, lam), lam=lam)
+    p.task_policy = {t: _pick(_shrink(*_cell_stats(v, models), g), lam) for t, v in by.items()}
+    return p
+
+
 def with_tasks(obs: list[Obs], tasks: list[str]) -> list[Obs]:
     return [dataclasses.replace(o, task=t) for o, t in zip(obs, tasks)]
 
@@ -116,6 +144,7 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--bootstrap", type=int, default=2000)
     ap.add_argument("--bag", type=int, default=25, help="배깅 횟수 (1이면 단일 fit)")
+    ap.add_argument("--budget", type=float, default=0.0, help="절약 모드: 정확도 우선 정책 비용 대비 예산 비율 (예: 0.25). 0이면 Arena 최대화")
     ap.add_argument("--out", default=str(ARTIFACTS), help="산출물 디렉터리 (제출 버전별로 분리, 예: artifacts/v2)")
     args = ap.parse_args()
     out = Path(args.out)
@@ -132,7 +161,8 @@ def main() -> None:
         test = set(fold)
         tr = [i for i in range(len(obs)) if i not in test]
         tr_obs, tr_X, tr_y = [obs[i] for i in tr], X[tr], [y[i] for i in tr]
-        p = bagged_fit(with_tasks(tr_obs, oof_categories(tr_obs, tr_X, tr_y, args.cv, args.seed + 1)), models, args.bag, args.seed)
+        tro = with_tasks(tr_obs, oof_categories(tr_obs, tr_X, tr_y, args.cv, args.seed + 1))
+        p = budget_fit(tro, models, args.budget) if args.budget else bagged_fit(tro, models, args.bag, args.seed)
         clf = CategoryClassifier.fit(tr_X, tr_y)
         single = best_single(tr_obs, models)
         for i, c in zip(fold, clf.predict(X[fold])):
@@ -159,7 +189,8 @@ def main() -> None:
     cat_acc = float(np.mean([held_cat[i] == y[i] for i in all_idx]))
 
     # 2) 전체 데이터: OOF 범주로 정책, 전체로 분류기
-    final = bagged_fit(with_tasks(obs, oof_categories(obs, X, y, args.cv, args.seed + 1)), models, args.bag, args.seed)
+    fo = with_tasks(obs, oof_categories(obs, X, y, args.cv, args.seed + 1))
+    final = budget_fit(fo, models, args.budget) if args.budget else bagged_fit(fo, models, args.bag, args.seed)
     clf = CategoryClassifier.fit(X, y)
     true_obs = obs
     f_acc, f_cost, f_arena = evaluate(final, with_tasks(true_obs, clf.predict(X)))
@@ -172,6 +203,7 @@ def main() -> None:
     report = {
         "load": load_info,
         "weights": "uniform per external source",
+        "mode": f"budget {args.budget}" if args.budget else f"max Arena, bagged x{args.bag}",
         "category_classifier_cv_accuracy": cat_acc,
         "cv": {
             "router": {"acc": r_acc, "cost_per_1k": r_cost, "arena": r_arena},

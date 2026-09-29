@@ -52,6 +52,8 @@ def split_variant(model: str) -> tuple[str, dict]:
     base, effort = model.split("@", 1)
     if effort == "off":
         return base, {"reasoning": {"enabled": False}}
+    if effort.startswith("cap"):  # "@cap1000" → 추론 토큰 상한 (답 자체는 잘리지 않음)
+        return base, {"reasoning": {"max_tokens": int(effort[3:])}}
     return base, {"reasoning": {"effort": effort}}
 
 

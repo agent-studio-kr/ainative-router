@@ -12,7 +12,7 @@ RouterArena items**. The router never reads RouterArena files and never matches 
 
 | Arena Score | Accuracy | Cost / 1K queries | Robustness | Opt.Sel | Opt.Cost | Opt.Acc |
 |---:|---:|---:|---:|---:|---:|---:|
-| **75.48** (local official scripts) | 78.39% | $0.547 | 85.00 | 4.24 | 22.24 | 89.79 |
+| **75.83** (official CI) | 78.09% | $0.367 | 83.10 | — | — | — |
 
 Details and history: [docs/results.md](docs/results.md).
 
