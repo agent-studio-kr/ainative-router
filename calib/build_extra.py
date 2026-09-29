@@ -26,6 +26,7 @@ def main() -> None:
     ap.add_argument("--out", default=str(NEW), help="출력 디렉터리 (재현 검증용)")
     ap.add_argument("--base", default=str(OLD), help="제외·병합할 기존 세트 (두 번째 확장은 data/calib_v2)")
     ap.add_argument("--prefix", default="cal2", help="추가분 id 접두사")
+    ap.add_argument("--configs", default="", help="쉼표로 구분한 config 만 확장 (비우면 전체)")
     args = ap.parse_args()
     out = Path(args.out)
     base = Path(args.base)
@@ -48,7 +49,7 @@ def main() -> None:
     extra, report = [], {}
     for cfg in sorted(loaders):
         target = round(targets.get(cfg, 0) * args.scale)
-        if target == 0:
+        if target == 0 or (args.configs and cfg not in args.configs.split(",")):
             continue
         # 기존 세트와 겹치지 않는 후보를 충분히 얻기 위해 넉넉히 요청
         cands = loaders[cfg](target * 3, args.seed, excl)
