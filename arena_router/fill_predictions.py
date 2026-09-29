@@ -74,7 +74,17 @@ def main() -> None:
     for e in preds:
         rec = results.get((requested(e), _key(e)))
         if rec is None:
+            # 끝내 응답이 없는 행: 실패 행으로 기록 (채점 0, 숨기지 않음)
             missing += 1
+            e["generated_result"] = {
+                "generated_answer": "",
+                "success": False,
+                "token_usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+                "provider": "openrouter",
+                "requested_model": requested(e).split("@")[0],
+                "request_params": {},
+                "error": "no response after retries",
+            }
             continue
         usage = rec.get("usage") or {}
         e["generated_result"] = {
