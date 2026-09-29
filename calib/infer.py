@@ -50,11 +50,21 @@ def split_variant(model: str) -> tuple[str, dict]:
     if "@" not in model:
         return model, {}
     base, effort = model.split("@", 1)
+    # "@cap800-fireworks" → 추론 상한 + 공급자 고정 (상한을 실제로 지키는 공급자가 따로 있다)
+    effort, _, provider = effort.partition("-")
+    effort, _, cap = effort.partition("~")  # "@low~3000" → 추론 low + 출력 상한 3000 (max_tokens, 공급자가 강제하는 생성 한도)
+    route = {"provider": {"order": [provider], "allow_fallbacks": False}} if provider else {}
+    if cap:
+        route["max_tokens"] = int(cap)
+    if provider.startswith("q:"):  # "@-q:bf16" → 해당 양자화 공급자만 (예: 원본 정밀도)
+        route = {"provider": {"quantizations": [provider[2:]], "allow_fallbacks": False}}
+    if not effort:  # "@-q:bf16" → 추론 설정 없이 공급자 조건만
+        return base, route
     if effort == "off":
-        return base, {"reasoning": {"enabled": False}}
+        return base, {"reasoning": {"enabled": False}, **route}
     if effort.startswith("cap"):  # "@cap1000" → 추론 토큰 상한 (답 자체는 잘리지 않음)
-        return base, {"reasoning": {"max_tokens": int(effort[3:])}}
-    return base, {"reasoning": {"effort": effort}}
+        return base, {"reasoning": {"max_tokens": int(effort[3:])}, **route}
+    return base, {"reasoning": {"effort": effort}, **route}
 
 
 CALL_TIMEOUT_S = 900.0
