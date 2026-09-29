@@ -1,14 +1,17 @@
 {
- "frozen_at": "2026-09-29T01:00:09.535048+00:00",
+ "frozen_at": "2026-09-29T06:26:25.012697+00:00",
  "code": {
   "arena_router/signals.py": "ff262307f149bbc80db1eba14b843c334b893a1555708590a1225546e5587930",
   "arena_router/policy.py": "c4d4f029c348271a5f3d309a5d0a39bb47ddd5679ba60c458c8f1acb2e0dc1a7",
-  "arena_router/router.py": "9166820ba183e4f51e45c2c9bd152167af0fa626f9774ffce4f59ff170f9e055"
+  "arena_router/router.py": "4914436dcb9e69a058c2ea990853665852e7d161e5386a56a3238e3247718fee",
+  "arena_router/tail.py": "733b12e9787616bed2ebb2a2b8fb61c45e7e59e93bc5c062e3da1fe9629e565f"
  },
  "artifacts": {
-  "policy.json": "056bcfc07a4a07a2dc30b001e8355e46fb161ea58cb68c9ae0f05aed517f1081",
+  "policy.json": "1ae6cf254d09ebc57f097d37cddc4a4e1dda538c3652f3fd1955853f916683ad",
   "category_clf.npz": "e1aade2c32fb3032bd0e867a754b9b5b0ce72dd6c531d40939d9f7b06d8e53c1",
-  "category_clf.classes.json": "4ca0d43b4cbcfc9d0ba0d9c3b0cb6bfde3955632992019b2d5eb3c6324936e07"
+  "category_clf.classes.json": "4ca0d43b4cbcfc9d0ba0d9c3b0cb6bfde3955632992019b2d5eb3c6324936e07",
+  "tail_model.npz": "edf31683e72cc2475fabee648916e1c8d1cefb4ab8c9f61721a180829435c0c3",
+  "tail_model.vocab.json": "9647ce90a6d37330683b78442e3c36ef3c2dbfb2131f6ea88aaa2d7203e2975d"
  },
  "hf_revisions": {
   "sentence-transformers/all-MiniLM-L6-v2": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"

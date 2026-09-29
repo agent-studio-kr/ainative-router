@@ -60,16 +60,38 @@ def split_variant(model: str) -> tuple[str, dict]:
 CALL_TIMEOUT_S = 900.0
 
 
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+
+
+def _openai_direct(base_model: str, extra: dict) -> tuple[str, dict, str] | None:
+    """openai/* 모델은 OPENAI_API_KEY 가 있으면 OpenAI API로 직접 호출 (추론 설정은 reasoning_effort 로 변환)."""
+    key = os.environ.get("OPENAI_API_KEY")
+    if not key or not base_model.startswith("openai/"):
+        return None
+    body_extra = {}
+    r = extra.get("reasoning") or {}
+    if r.get("enabled") is False:
+        body_extra["reasoning_effort"] = "none"
+    elif "effort" in r:
+        body_extra["reasoning_effort"] = r["effort"]
+    return OPENAI_URL, {"model": base_model.split("/", 1)[1], **body_extra}, key
+
+
 async def call(client: httpx.AsyncClient, key: str, model: str, prompt: str) -> dict:
     base_model, extra = split_variant(model)
     body = {"model": base_model, "messages": [{"role": "user", "content": prompt}], "usage": {"include": True}, **extra}
+    url = URL
+    direct = _openai_direct(base_model, extra)
+    if direct:
+        url, b, key = direct
+        body = {**b, "messages": [{"role": "user", "content": prompt}]}
     invoked_at = dt.datetime.now(dt.timezone.utc).isoformat()
     t0 = time.monotonic()
     last_error = ""
     for attempt in range(5):
         try:
             # httpx 타임아웃은 읽기 간격 기준이라 keepalive가 오면 끝나지 않는다 → 요청 전체 시간 상한
-            r = await asyncio.wait_for(client.post(URL, json=body, headers={"Authorization": f"Bearer {key}"}), CALL_TIMEOUT_S)
+            r = await asyncio.wait_for(client.post(url, json=body, headers={"Authorization": f"Bearer {key}"}), CALL_TIMEOUT_S)
             data = r.json()
             if r.status_code in RETRY_STATUS or ("error" in data and data["error"].get("code") in RETRY_STATUS):
                 last_error = str(data.get("error", r.status_code))[:300]
@@ -85,8 +107,8 @@ async def call(client: httpx.AsyncClient, key: str, model: str, prompt: str) -> 
             usage = data.get("usage") or {}
             return {
                 "requested_model": model,
-                "model_used": data.get("model"),
-                "provider": data.get("provider"),
+                "model_used": ("openai/" + data["model"]) if direct and data.get("model") else data.get("model"),
+                "provider": data.get("provider") or ("OpenAI" if direct else None),
                 "request_id": data.get("id"),
                 "request_params": extra,
                 "invoked_at": invoked_at,

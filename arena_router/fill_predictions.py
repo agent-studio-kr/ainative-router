@@ -32,11 +32,12 @@ def main() -> None:
     ap.add_argument("--concurrency", type=int, default=48)
     ap.add_argument("--spend-cap", type=float, default=35.0)
     ap.add_argument("--artifacts", default=str(ROOT / "artifacts"), help="이 제출이 쓰는 동결 산출물 디렉터리")
+    ap.add_argument("--routerarena-dir", default=str(ROUTERARENA_DIR), help="예측 파일이 있는 RouterArena 체크아웃")
     ap.add_argument("--no-call", action="store_true", help="호출 없이 기존 결과만으로 채움 (끝나지 않는 호출은 실패 행으로 남김)")
     args = ap.parse_args()
 
     load_dotenv(ROOT / ".env")
-    path = ROUTERARENA_DIR / "router_inference" / "predictions" / f"{args.router_name}.json"
+    path = Path(args.routerarena_dir) / "router_inference" / "predictions" / f"{args.router_name}.json"
     preds = json.loads(path.read_text())
 
     # 정규 행: 동결된 라우터로 다시 라우팅해 추론 강도 변형까지 포함한 선택지("model@low" 등)를 얻는다.
@@ -95,7 +96,7 @@ def main() -> None:
                 "output_tokens": usage.get("completion_tokens", 0),
                 "total_tokens": usage.get("total_tokens", 0),
             },
-            "provider": "openrouter",
+            "provider": "openai" if (rec.get("request_id") or "").startswith("chatcmpl-") else "openrouter",
             "requested_model": (rec.get("requested_model") or "").split("@")[0],
             "request_params": rec.get("request_params") or {},
             "model_used": rec.get("model_used"),
