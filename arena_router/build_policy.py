@@ -26,7 +26,7 @@ from calib.common import DATA_DIR, ROOT
 
 ARTIFACTS = ROOT / "artifacts"
 EMB_CACHE = DATA_DIR / "body_embeddings.npz"
-MODELS = "google/gemma-4-31b-it,openai/gpt-6-luna,google/gemini-3-flash-preview,deepseek/deepseek-v4.1-flash,qwen/qwen3-235b-a22b-2507,deepseek/deepseek-v4-flash-0731"
+MODELS = "google/gemma-4-31b-it,openai/gpt-6-luna,google/gemini-3-flash-preview,deepseek/deepseek-v4.1-flash,qwen/qwen3-235b-a22b-2507,deepseek/deepseek-v4-flash-0731,deepseek/deepseek-v4.1-flash@low,google/gemini-3-flash-preview@off,deepseek/deepseek-v4-flash-0731@low"
 
 
 def load_embeddings(prompts: list[dict]) -> dict[str, np.ndarray]:

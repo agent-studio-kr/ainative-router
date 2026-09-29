@@ -1,6 +1,11 @@
 # Results
 
-## Current submission: content-only router (`ainative-router`)
+## Current submission: content-only router with reasoning settings (`ainative-router`)
+
+Adds reasoning-setting options (see method §2). On calibration CV the Arena score is unchanged (72.43 vs 72.43) at
+22% lower cost ($0.377 vs $0.481 per 1K). Official CI result: see PR #213. Robustness (local): 83.10.
+
+### Previous content-only version (6 models, default reasoning)
 
 RouterArena official scripts, run locally (RouterArena `f371ef0` + `patches/routerarena-ainative-router.patch`).
 The official CI result is posted on [PR #213](https://github.com/RouteWorks/RouterArena/pull/213).

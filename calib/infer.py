@@ -121,7 +121,8 @@ async def run_pairs(
     lock = asyncio.Lock()
     sem = asyncio.Semaphore(concurrency)
     stop = asyncio.Event()
-    async with httpx.AsyncClient(timeout=httpx.Timeout(120.0)) as client:
+    # 기본 연결 풀(100)이 동시성 상한이 되지 않도록 넉넉히
+    async with httpx.AsyncClient(timeout=httpx.Timeout(120.0), limits=httpx.Limits(max_connections=1000, max_keepalive_connections=200)) as client:
         start_usage = await account_usage(client, key)
         print(f"account usage at start: ${start_usage:.2f} (cap ${spend_cap:.2f})", flush=True)
         counter = {"n": 0}

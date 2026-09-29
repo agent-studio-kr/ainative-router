@@ -37,13 +37,26 @@ def main() -> None:
     path = ROUTERARENA_DIR / "router_inference" / "predictions" / f"{args.router_name}.json"
     preds = json.loads(path.read_text())
 
-    # 같은 (모델, 문항)은 한 번만 호출 (regular 행과 optimality 행이 겹치지 않지만 방어적으로)
+    # 정규 행: 동결된 라우터로 다시 라우팅해 추론 강도 변형까지 포함한 선택지("model@low" 등)를 얻는다.
+    # 예측 파일의 prediction(기본 모델명)과 일치해야 한다. optimality 행은 각 풀 모델의 기본 설정.
+    from arena_router.router import ArenaRouter
+
+    regular = [e for e in preds if not e.get("for_optimality")]
+    choice = {_key(e): m for e, (m, _) in zip(regular, ArenaRouter().route_batch([e["prompt"] for e in regular]))}
+    for e in regular:
+        if choice[_key(e)].split("@")[0] != e["prediction"]:
+            raise RuntimeError(f"routing mismatch for {_key(e)}: {choice[_key(e)]} vs {e['prediction']}")
+
+    def requested(e: dict) -> str:
+        return e["prediction"] if e.get("for_optimality") else choice[_key(e)]
+
+    # 같은 (선택지, 문항)은 한 번만 호출
     pairs, seen = [], set()
     for e in preds:
-        k = (e["prediction"], _key(e))
+        k = (requested(e), _key(e))
         if k not in seen:
             seen.add(k)
-            pairs.append((e["prediction"], {"id": _key(e), "prompt": e["prompt"]}))
+            pairs.append((requested(e), {"id": _key(e), "prompt": e["prompt"]}))
     print(f"{len(preds)} rows, {len(pairs)} unique calls")
     if not args.no_call:
         asyncio.run(run_pairs(pairs, os.environ["OPENROUTER_API_KEY"], args.concurrency, args.spend_cap, RESULTS_DIR))
@@ -57,7 +70,7 @@ def main() -> None:
 
     missing = 0
     for e in preds:
-        rec = results.get((e["prediction"], _key(e)))
+        rec = results.get((requested(e), _key(e)))
         if rec is None:
             missing += 1
             continue
@@ -71,7 +84,8 @@ def main() -> None:
                 "total_tokens": usage.get("total_tokens", 0),
             },
             "provider": "openrouter",
-            "requested_model": rec.get("requested_model"),
+            "requested_model": (rec.get("requested_model") or "").split("@")[0],
+            "request_params": rec.get("request_params") or {},
             "model_used": rec.get("model_used"),
             "upstream_provider": rec.get("provider"),
             "request_id": rec.get("request_id"),

@@ -40,6 +40,11 @@ actually assign.
 
 **Weights: uniform per external source** (each source's rows sum to 1). No RouterArena proportions are used.
 
+**Options** are models *and* reasoning settings: the six models at provider defaults plus
+`deepseek-v4.1-flash` (reasoning effort low), `gemini-3-flash-preview` (reasoning off) and `deepseek-v4-flash-0731`
+(reasoning effort low), all measured on every calibration query. The prediction file records the base model name;
+each row's `generated_result.request_params` records the reasoning setting actually sent.
+
 **Costs** use RouterArena's price table (`model_cost/model_cost.json`) and OpenRouter list prices for models not in it
 (registered at those prices in the patch).
 
@@ -56,9 +61,9 @@ held-out part. ΔArena CI by paired bootstrap (2,000 resamples). Report: `artifa
 
 | | CV Arena | Accuracy | $/1K |
 |---|---:|---:|---:|
-| **Router** | **72.15** | 74.3% | 0.487 |
-| Best single model per fold | 69.24 | 72.8% | 1.361 |
-| Δ [95% CI] | **+2.91 [+2.19, +3.61]** | | |
+| **Router** | **72.43** | 74.2% | 0.377 |
+| Best single option per fold | 70.50 | 72.9% | 0.671 |
+| Δ [95% CI] | **+1.93 [+1.10, +2.74]** | | |
 
 (Absolute values are lower than RouterArena's because every source counts equally, including the hardest ones.)
 

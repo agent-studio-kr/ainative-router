@@ -5,22 +5,25 @@
   "google/gemini-3-flash-preview",
   "deepseek/deepseek-v4.1-flash",
   "qwen/qwen3-235b-a22b-2507",
-  "deepseek/deepseek-v4-flash-0731"
+  "deepseek/deepseek-v4-flash-0731",
+  "deepseek/deepseek-v4.1-flash@low",
+  "google/gemini-3-flash-preview@off",
+  "deepseek/deepseek-v4-flash-0731@low"
  ],
- "default_model": "deepseek/deepseek-v4.1-flash",
- "lambda": 2.5854718276321282,
+ "default_model": "deepseek/deepseek-v4-flash-0731@low",
+ "lambda": 39.01440437113948,
  "task_policy": {
   "chess": "google/gemini-3-flash-preview",
   "code": "google/gemma-4-31b-it",
-  "ethics": "deepseek/deepseek-v4.1-flash",
+  "ethics": "deepseek/deepseek-v4.1-flash@low",
   "finance_math": "deepseek/deepseek-v4-flash-0731",
-  "math": "deepseek/deepseek-v4-flash-0731",
+  "math": "deepseek/deepseek-v4-flash-0731@low",
   "mcq_knowledge": "deepseek/deepseek-v4.1-flash",
   "mcq_math": "google/gemma-4-31b-it",
-  "nli": "deepseek/deepseek-v4.1-flash",
-  "reading": "deepseek/deepseek-v4-flash-0731",
+  "nli": "google/gemma-4-31b-it",
+  "reading": "deepseek/deepseek-v4-flash-0731@low",
   "translation": "google/gemini-3-flash-preview",
-  "trivia": "google/gemini-3-flash-preview"
+  "trivia": "google/gemini-3-flash-preview@off"
  },
  "task_domain_policy": {}
 }
