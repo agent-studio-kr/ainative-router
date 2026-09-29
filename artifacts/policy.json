@@ -22,15 +22,8 @@
   "mcq_math": "google/gemma-4-31b-it",
   "nli": "google/gemma-4-31b-it",
   "reading": "deepseek/deepseek-v4-flash-0731@low",
-  "translation": "deepseek/deepseek-v4-flash-0731@low",
+  "translation": "google/gemini-3-flash-preview",
   "trivia": "google/gemini-3-flash-preview@off"
  },
- "task_domain_policy": {},
- "note": "Bagged policy (multiple-choice -> deepseek-v4.1-flash low) with two cost-first changes: translation -> deepseek-v4-flash-0731 low (calibration: -1.0 point accuracy, about 1/3 of the cost), and multiple-choice questions predicted to need long reasoning (top 10% by a question-only reasoning-length predictor, arena_router/tail.py) -> deepseek-v4-flash-0731 low.",
- "tail_rule": {
-  "task": "mcq_knowledge",
-  "model": "deepseek/deepseek-v4-flash-0731@low",
-  "threshold": 6.1532164650678975,
-  "top_fraction_on_calibration": 0.1
- }
+ "task_domain_policy": {}
 }

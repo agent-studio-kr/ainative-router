@@ -15,9 +15,8 @@ from pathlib import Path
 from calib.common import ROOT
 
 ARTIFACTS = ROOT / "artifacts"
-CODE_FILES = ["arena_router/signals.py", "arena_router/policy.py", "arena_router/router.py", "arena_router/tail.py"]
+CODE_FILES = ["arena_router/signals.py", "arena_router/policy.py", "arena_router/router.py"]
 ARTIFACT_FILES = ["policy.json", "category_clf.npz", "category_clf.classes.json"]
-OPTIONAL_ARTIFACT_FILES = ["tail_model.npz", "tail_model.vocab.json"]  # tail_rule 을 쓰는 정책만
 
 
 def _sha(path: Path) -> str:
@@ -33,7 +32,7 @@ def _hf_revision(repo: str) -> str:
 def current_hashes(artifacts: Path = ARTIFACTS) -> dict:
     return {
         "code": {f: _sha(ROOT / f) for f in CODE_FILES},
-        "artifacts": {f: _sha(artifacts / f) for f in ARTIFACT_FILES + [f for f in OPTIONAL_ARTIFACT_FILES if (artifacts / f).exists()]},
+        "artifacts": {f: _sha(artifacts / f) for f in ARTIFACT_FILES},
     }
 
 
@@ -58,7 +57,7 @@ def freeze(artifacts: Path = ARTIFACTS) -> None:
 def verify(artifacts: Path = ARTIFACTS) -> None:
     rec = json.loads((artifacts / "FREEZE.json").read_text())
     now = current_hashes(artifacts)
-    diff = [k for part in ("code", "artifacts") for k in rec[part].keys() | now[part].keys() if rec[part].get(k) != now[part].get(k)]
+    diff = [k for part in ("code", "artifacts") for k, v in now[part].items() if rec[part].get(k) != v]
     if diff:
         raise RuntimeError(f"freeze mismatch: {diff}")
 
