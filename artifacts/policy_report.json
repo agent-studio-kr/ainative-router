@@ -8,9 +8,9 @@
  "category_classifier_cv_accuracy": 0.8480853735091023,
  "cv": {
   "router": {
-   "acc": 0.7419421566240029,
-   "cost_per_1k": 0.37699611908216274,
-   "arena": 0.724278173639284
+   "acc": 0.7435240322933541,
+   "cost_per_1k": 0.37476760190241304,
+   "arena": 0.725725517212201
   },
   "best_single_per_fold": {
    "acc": 0.728847242860718,
@@ -21,16 +21,16 @@
     "deepseek/deepseek-v4-flash-0731@low": 3689
    }
   },
-  "delta_arena": 0.019267368757848846,
+  "delta_arena": 0.020714712330765828,
   "delta_arena_ci95": [
-   0.01097731411047918,
-   0.02735827680717301
+   0.012609646002184848,
+   0.028606656591086015
   ]
  },
  "final_in_sample": {
-  "acc": 0.7472891805816386,
-  "cost_per_1k": 0.38744090033301165,
-  "arena": 0.7285456092653615,
+  "acc": 0.7466947389113573,
+  "cost_per_1k": 0.34836725781967276,
+  "arena": 0.7294188932058374,
   "lambda": 39.01440437113948
  },
  "single_models_in_sample": {
@@ -82,9 +82,8 @@
  },
  "final_route_share_unweighted": {
   "deepseek/deepseek-v4-flash-0731@low": 666,
-  "deepseek/deepseek-v4.1-flash": 3913,
+  "deepseek/deepseek-v4.1-flash@low": 4166,
   "google/gemini-3-flash-preview": 578,
-  "deepseek/deepseek-v4.1-flash@low": 253,
   "deepseek/deepseek-v4-flash-0731": 58,
   "google/gemini-3-flash-preview@off": 472,
   "google/gemma-4-31b-it": 432

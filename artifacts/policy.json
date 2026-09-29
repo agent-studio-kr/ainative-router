@@ -18,7 +18,7 @@
   "ethics": "deepseek/deepseek-v4.1-flash@low",
   "finance_math": "deepseek/deepseek-v4-flash-0731",
   "math": "deepseek/deepseek-v4-flash-0731@low",
-  "mcq_knowledge": "deepseek/deepseek-v4.1-flash",
+  "mcq_knowledge": "deepseek/deepseek-v4.1-flash@low",
   "mcq_math": "google/gemma-4-31b-it",
   "nli": "google/gemma-4-31b-it",
   "reading": "deepseek/deepseek-v4-flash-0731@low",

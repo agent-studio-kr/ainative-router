@@ -35,6 +35,11 @@ toward the global mean (`est = (n·mean + K0·global) / (n + K0)`, `K0 = 10`). F
 `argmax_m (acc_m − λ·cost_m)` per cell; the λ with the highest Arena Score (RouterArena formula, β = 0.1) on the
 calibration set is kept.
 
+**Bagging.** Some categories have near-tied options (e.g. `deepseek-v4.1-flash` at default reasoning vs. reasoning
+effort low for multiple-choice: equal accuracy within noise, 31% lower cost for low). The final policy is the per-category
+majority vote over 25 group-bootstrap refits (`build_policy.bagged_fit`), which stabilises such choices; multiple-choice
+gets reasoning effort low in 18 of 25 refits.
+
 Policy rows use **out-of-fold** predicted categories, so the policy is fit on the categories the classifier would
 actually assign.
 
@@ -61,9 +66,9 @@ held-out part. ΔArena CI by paired bootstrap (2,000 resamples). Report: `artifa
 
 | | CV Arena | Accuracy | $/1K |
 |---|---:|---:|---:|
-| **Router** | **72.43** | 74.2% | 0.377 |
+| **Router** | **72.57** | 74.4% | 0.375 |
 | Best single option per fold | 70.50 | 72.9% | 0.671 |
-| Δ [95% CI] | **+1.93 [+1.10, +2.74]** | | |
+| Δ [95% CI] | **+2.07 [+1.26, +2.86]** | | |
 
 (Absolute values are lower than RouterArena's because every source counts equally, including the hardest ones.)
 

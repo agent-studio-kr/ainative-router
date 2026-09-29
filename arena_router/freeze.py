@@ -36,7 +36,7 @@ def current_hashes(artifacts: Path = ARTIFACTS) -> dict:
     }
 
 
-def freeze() -> None:
+def freeze(artifacts: Path = ARTIFACTS) -> None:
     import sys
 
     sys.path.insert(0, str(ROOT / "scripts"))
@@ -46,11 +46,11 @@ def freeze() -> None:
 
     record = {
         "frozen_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-        **current_hashes(),
+        **current_hashes(artifacts),
         "hf_revisions": {EMBED_MODEL: _hf_revision(EMBED_MODEL)},
         "note": "Frozen before routing RouterArena. Content-only routing (question body -> category -> model).",
     }
-    (ARTIFACTS / "FREEZE.json").write_text(json.dumps(record, indent=1))
+    (artifacts / "FREEZE.json").write_text(json.dumps(record, indent=1))
     print(json.dumps(record, indent=1))
 
 
@@ -65,12 +65,13 @@ def verify(artifacts: Path = ARTIFACTS) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--artifacts", default=str(ARTIFACTS), help="제출 버전별 산출물 디렉터리")
     args = ap.parse_args()
     if args.verify:
-        verify()
+        verify(Path(args.artifacts))
         print("freeze OK")
     else:
-        freeze()
+        freeze(Path(args.artifacts))
 
 
 if __name__ == "__main__":

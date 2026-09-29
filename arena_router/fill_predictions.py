@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import json
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -30,6 +31,7 @@ def main() -> None:
     ap.add_argument("router_name")
     ap.add_argument("--concurrency", type=int, default=48)
     ap.add_argument("--spend-cap", type=float, default=35.0)
+    ap.add_argument("--artifacts", default=str(ROOT / "artifacts"), help="이 제출이 쓰는 동결 산출물 디렉터리")
     ap.add_argument("--no-call", action="store_true", help="호출 없이 기존 결과만으로 채움 (끝나지 않는 호출은 실패 행으로 남김)")
     args = ap.parse_args()
 
@@ -42,7 +44,7 @@ def main() -> None:
     from arena_router.router import ArenaRouter
 
     regular = [e for e in preds if not e.get("for_optimality")]
-    choice = {_key(e): m for e, (m, _) in zip(regular, ArenaRouter().route_batch([e["prompt"] for e in regular]))}
+    choice = {_key(e): m for e, (m, _) in zip(regular, ArenaRouter(Path(args.artifacts)).route_batch([e["prompt"] for e in regular]))}
     for e in regular:
         if choice[_key(e)].split("@")[0] != e["prediction"]:
             raise RuntimeError(f"routing mismatch for {_key(e)}: {choice[_key(e)]} vs {e['prediction']}")

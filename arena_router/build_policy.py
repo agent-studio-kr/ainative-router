@@ -16,6 +16,7 @@ import argparse
 import dataclasses
 import json
 import random
+from pathlib import Path
 from collections import Counter, defaultdict
 
 import numpy as np
@@ -85,6 +86,25 @@ def oof_categories(obs: list[Obs], X: np.ndarray, y: list[str], k: int, seed: in
     return pred
 
 
+def bagged_fit(obs: list[Obs], models: list[str], n_bag: int, seed: int) -> Policy:
+    """그룹 단위 부트스트랩으로 n_bag번 fit → 범주별 다수결. 거의 동률인 선택(예: 추론 기본 vs low)을 안정화한다."""
+    base = fit(obs, models, use_domain=False)
+    if n_bag <= 1:
+        return base
+    rng = np.random.default_rng(seed)
+    groups = sorted({o.group_id for o in obs})
+    members: dict[str, list[int]] = defaultdict(list)
+    for i, o in enumerate(obs):
+        members[o.group_id].append(i)
+    votes: dict[str, Counter] = defaultdict(Counter)
+    for _ in range(n_bag):
+        idx = [i for g in rng.choice(len(groups), len(groups)) for i in members[groups[g]]]
+        for t, m in fit([obs[i] for i in idx], models, use_domain=False).task_policy.items():
+            votes[t][m] += 1
+    base.task_policy = {t: votes[t].most_common(1)[0][0] if votes[t] else m for t, m in base.task_policy.items()}
+    return base
+
+
 def with_tasks(obs: list[Obs], tasks: list[str]) -> list[Obs]:
     return [dataclasses.replace(o, task=t) for o, t in zip(obs, tasks)]
 
@@ -95,7 +115,10 @@ def main() -> None:
     ap.add_argument("--cv", type=int, default=5)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--bootstrap", type=int, default=2000)
+    ap.add_argument("--bag", type=int, default=25, help="배깅 횟수 (1이면 단일 fit)")
+    ap.add_argument("--out", default=str(ARTIFACTS), help="산출물 디렉터리 (제출 버전별로 분리, 예: artifacts/v2)")
     args = ap.parse_args()
+    out = Path(args.out)
     models = args.models.split(",")
 
     obs, X, y, load_info = load_obs(models)
@@ -109,7 +132,7 @@ def main() -> None:
         test = set(fold)
         tr = [i for i in range(len(obs)) if i not in test]
         tr_obs, tr_X, tr_y = [obs[i] for i in tr], X[tr], [y[i] for i in tr]
-        p = fit(with_tasks(tr_obs, oof_categories(tr_obs, tr_X, tr_y, args.cv, args.seed + 1)), models, use_domain=False)
+        p = bagged_fit(with_tasks(tr_obs, oof_categories(tr_obs, tr_X, tr_y, args.cv, args.seed + 1)), models, args.bag, args.seed)
         clf = CategoryClassifier.fit(tr_X, tr_y)
         single = best_single(tr_obs, models)
         for i, c in zip(fold, clf.predict(X[fold])):
@@ -136,15 +159,15 @@ def main() -> None:
     cat_acc = float(np.mean([held_cat[i] == y[i] for i in all_idx]))
 
     # 2) 전체 데이터: OOF 범주로 정책, 전체로 분류기
-    final = fit(with_tasks(obs, oof_categories(obs, X, y, args.cv, args.seed + 1)), models, use_domain=False)
+    final = bagged_fit(with_tasks(obs, oof_categories(obs, X, y, args.cv, args.seed + 1)), models, args.bag, args.seed)
     clf = CategoryClassifier.fit(X, y)
     true_obs = obs
     f_acc, f_cost, f_arena = evaluate(final, with_tasks(true_obs, clf.predict(X)))
     single_all = {m: evaluate(Policy(models, m), obs) for m in models}
 
-    ARTIFACTS.mkdir(exist_ok=True)
-    (ARTIFACTS / "policy.json").write_text(json.dumps(final.to_dict(), indent=1))
-    clf.save(ARTIFACTS / "category_clf.npz")
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "policy.json").write_text(json.dumps(final.to_dict(), indent=1))
+    clf.save(out / "category_clf.npz")
     usage = Counter(final.route(c, "") for c in clf.predict(X))
     report = {
         "load": load_info,
@@ -160,7 +183,7 @@ def main() -> None:
         "single_models_in_sample": {m: {"acc": a, "cost_per_1k": c, "arena": s} for m, (a, c, s) in single_all.items()},
         "final_route_share_unweighted": dict(usage),
     }
-    (ARTIFACTS / "policy_report.json").write_text(json.dumps(report, indent=1))
+    (out / "policy_report.json").write_text(json.dumps(report, indent=1))
     print(f"category classifier CV accuracy {cat_acc:.3f}")
     print(json.dumps(report["cv"], indent=1))
     print(json.dumps(report["final_in_sample"], indent=1))

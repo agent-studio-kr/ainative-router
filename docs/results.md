@@ -1,6 +1,12 @@
 # Results
 
-## Current submission: content-only router with reasoning settings (`ainative-router`)
+## Current submission: bagged policy (`ainative-router`)
+
+Same options as below; the policy is the majority vote over 25 bootstrap refits (method §2), which moves
+multiple-choice to `deepseek-v4.1-flash` with reasoning effort low. Calibration CV: Arena 72.57 (+0.14 vs single fit,
+[−0.04, +0.32]); router vs best single option +2.07 [+1.26, +2.86]. Official CI result: see PR #213.
+
+### Previous: content-only router with reasoning settings
 
 Adds reasoning-setting options (see method §2). On calibration CV the Arena score is unchanged (72.43 vs 72.43) at
 22% lower cost ($0.377 vs $0.481 per 1K).
