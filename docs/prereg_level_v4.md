@@ -25,3 +25,14 @@ A: the same pipeline with no level (11 categories).
 - Fit A and B on the exploration split; score both once on the confirmation split. Sources weighted equally within each split (weights 1/n from that split's own counts, fixed across bootstrap resamples as in earlier pre-registrations); 1,000 group-bootstrap resamples of the confirmation split, paired B − A.
 - **Adopt B only if the 95% CI lower bound of ΔArena > 0.** One run of `scripts/eval_prereg_level.py`; no other structures are scored on the confirmation split.
 - If adopted: refit B on all of `data/calib_v4` (same settings) for the submission, and disclose the difficulty model in the method notes. If not adopted: the submitted policy is unchanged.
+
+## Result (2026-09-30, recorded after the single run)
+
+Not adopted. On the confirmation split (3,761 items with all five results; sources weighted equally):
+
+| | accuracy | $/1K | Arena |
+|---|---|---|---|
+| A (11 categories) | 75.14% | 0.374 | 73.26 |
+| B (categories × 3 levels) | 75.48% | 0.373 | 73.55 |
+
+ΔArena (B − A) +0.29 [−0.19, +0.81]. The point estimate is positive and in line with the exploration estimates, but the CI lower bound is below 0, so the submitted policy is unchanged. Sub-cells that departed from their category's choice were in reading, NLI, translation, code, math and ethics; none in the multiple-choice category.
